@@ -8,7 +8,7 @@ from inspect import getfullargspec
 from io import StringIO
 from time import time
 
-from pyrogram import filters
+from pyrogram import filters, Client
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 SUDOERS = [7792739542]  # Replace with actual user IDs
