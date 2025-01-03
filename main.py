@@ -236,7 +236,7 @@ async def restart(message):
     except:
         pass
     
-    )
+    
     os.system(f"kill -9 {os.getpid()} && python3 main.py")
 
 
