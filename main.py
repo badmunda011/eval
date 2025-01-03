@@ -11,7 +11,7 @@ from time import time
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
-from config import SUDOERS
+SUDOERS = [7792739542]  # Replace with actual user IDs
 
 # Enable logging
 logging.basicConfig(level=logging.INFO)
