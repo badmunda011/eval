@@ -4,6 +4,8 @@ import subprocess
 import sys
 import traceback
 import logging
+import shutil
+import socket
 from inspect import getfullargspec
 from io import StringIO
 from time import time
@@ -222,6 +224,42 @@ async def shellrunner(_, message: Message):
         await edit_or_reply(message, text="<b>OUTPUT :</b>\n<code>None</code>")
     await message.stop_propagation()
 
+
+
+@app.on_message(filters.command(["restart"]))
+async def restart(message):
+    
+    try:
+        shutil.rmtree("downloads")
+        shutil.rmtree("raw_files")
+        shutil.rmtree("cache")
+    except:
+        pass
+    
+    )
+    os.system(f"kill -9 {os.getpid()} && python3 main.py")
+
+
+@app.on_message(filters.command("sudolist") & filters.user(SUDOERS))
+async def sudolist(client: Client, message: Message):
+    text = "SUDOERS LIST\n\n"
+    for index, user_id in enumerate(SUDOERS, 1):
+        try:
+            user = await client.get_users(user_id)
+            text += (
+                f"{index}.\n"
+                f"Name: {user.first_name}\n"
+                f"User ID: {user.id}\n"
+                f"Username: @{user.username if user.username else 'N/A'}\n"
+                f"Mention: {user.mention}\n\n"
+            )
+        except Exception as e:
+            text += f"{index}. Unable to fetch details for User ID: {user_id}\nError: {e}\n\n"
+
+    await message.reply_text(text)
+
+
 # Run the bot
 if __name__ == "__main__":
+    print("Bot Started") 
     app.run()
