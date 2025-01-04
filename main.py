@@ -64,7 +64,7 @@ async def execute_shell(client, message: Message):
         cmd = " ".join(message.text.split()[1:])
         try:
             output = subprocess.check_output(shlex.split(cmd), stderr=subprocess.STDOUT, timeout=60)
-            await message.reply(f"Command executed successfully:\n{output.decode()}")
+            await message.reply(f"Command executed successfully:\n```{output.decode()}```")
         except subprocess.CalledProcessError as e:
             await message.reply(f"Error occurred while executing the command:\n{e.output.decode()}")
     else:
@@ -79,7 +79,7 @@ async def eval_code(client, message: Message):
             exec_locals = {}
             exec(code, {}, exec_locals)
             output = exec_locals.get("result", "Execution finished with no result.")
-            await message.reply(f"Execution successful:\n{output}")
+            await message.reply(f"Execution successful:\n```{output}```")
         except Exception as e:
             await message.reply(f"Error during execution:\n{traceback.format_exc()}")
     else:
