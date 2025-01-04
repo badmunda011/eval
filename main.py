@@ -79,7 +79,7 @@ async def eval_code(client, message: Message):
             exec_locals = {}
             exec(code, {}, exec_locals)
             output = exec_locals.get("result", "Execution finished with no result.")
-            await message.reply(f"Execution successful:\n```{output}```")
+            await message.reply(f"Result: \n```success```\n```{output}```")
         except Exception as e:
             await message.reply(f"Error during execution:\n```{traceback.format_exc()}```")
     else:
