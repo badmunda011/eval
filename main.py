@@ -284,5 +284,12 @@ async def main():
         await asyncio.Event().wait()  # Keep the bot running
 
 
+
+# Check if already connected before starting
+if not await bot.is_connected():
+    await bot.start()
+else:
+    print("Bot is already connected.")
+
 if __name__ == "__main__":
     asyncio.get_event_loop().run_until_complete(main())
