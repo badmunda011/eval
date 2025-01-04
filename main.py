@@ -12,11 +12,7 @@ from datetime import datetime
 from inspect import getfullargspec
 from io import StringIO
 from time import time 
-from pyrogram import Client, filters, types as t
-from lexica import Client as ApiClient, AsyncClient
-from pyrogram.types import InlineKeyboardButton
-from math import ceil
-import asyncio
+
 
 # Define bot credentials (Use your own token and API credentials)
 API_ID = "12380656"
@@ -280,6 +276,22 @@ async def shellrunner(_, message: Message):
 
 
 
+
+
+
+from pyrogram import Client, filters, types as t
+from lexica import Client as ApiClient, AsyncClient
+from pyrogram.types import InlineKeyboardButton
+from math import ceil
+import asyncio
+
+# Global database to store user data
+Database = {}
+
+# API client for lexica
+api = ApiClient()
+Models = api.getModels()['models']['image']
+
 async def ImageGeneration(model, prompt):
     try:
         client = AsyncClient()
@@ -324,6 +336,15 @@ def getText(message):
     else:
         return None
 
+class EqInlineKeyboardButton(InlineKeyboardButton):
+    def __eq__(self, other):
+        return self.text == other.text
+
+    def __lt__(self, other):
+        return self.text < other.text
+
+    def __gt__(self, other):
+        return self.text > other.text
 
 def paginate_models(page_n: int, models: list, user_id) -> list:
     modules = sorted(
@@ -375,30 +396,31 @@ def paginate_models(page_n: int, models: list, user_id) -> list:
         pairs += [[EqInlineKeyboardButton("⌯ ʙᴀᴄᴋ ⌯", callback_data=f"d.-1.{user_id}")]]
     return pairs
 
-
-@bot.on_message(filters.command(["draw","create","imagine","dream"]))
-async def draw(_, m: t.Message):
+@bot.on_message(filters.command(["draw", "create", "imagine", "dream"]))
+async def draw(bot, m: t.Message):
     global Database
     prompt = getText(m)
     if prompt is None:
         return await m.reply_text("<code>ᴘʟᴇᴀsᴇ ᴘʀᴏᴠɪᴅᴇ ᴀ ᴘʀᴏᴍᴘᴛ. ᴜsᴀɢᴇ: /draw <prompt></code>")
+    
     user = m.from_user
     data = {'prompt': prompt, 'reply_to_id': m.id}
     Database[user.id] = data
     btns = paginate_models(0, Models, user.id)
+    
     await m.reply_text(
         text=f"**ʜᴇʟʟᴏ {m.from_user.mention}**\n\n**sᴇʟᴇᴄᴛ ʏᴏᴜʀ ɪᴍᴀɢᴇ ɢᴇɴᴇʀᴀᴛᴏʀ ᴍᴏᴅᴇʟ**",
         reply_markup=t.InlineKeyboardMarkup(btns)
     )
 
-
 @bot.on_callback_query(filters.regex(pattern=r"^d.(.*)"))
-async def selectModel(_, query: t.CallbackQuery):
+async def selectModel(bot, query: t.CallbackQuery):
     global Database
     data = query.data.split('.')
     auth_user = int(data[-1])
     if query.from_user.id != auth_user:
         return await query.answer("No.")
+    
     if len(data) > 3:
         if data[1] == "right":
             next_page = int(data[2])
@@ -415,32 +437,36 @@ async def selectModel(_, query: t.CallbackQuery):
                 )
             )
         return
+    
     modelId = int(data[1])
     await query.edit_message_text("**ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ, ɢᴇɴᴇʀᴀᴛɪɴɢ ʏᴏᴜʀ ɪᴍᴀɢᴇ.**")
     promptData = Database.get(auth_user, None)
     if promptData is None:
-        return await query.edit_message_text("sᴏᴍᴇᴛʜɪɴɢ ᴡᴇɴᴛ ᴡʀᴏɴɢ @iam_daxx !!.")
+        return await query.edit_message_text("sᴏᴍᴇᴛʜɪɴɢ ᴡᴇɴᴛ ᴡʀᴏɴɢ.")
+    
     img_url = await ImageGeneration(modelId, promptData['prompt'])
     if img_url is None or img_url == 2 or img_url == 1:
-        return await query.edit_message_text("sᴏᴍᴇᴛʜɪɴɢ ᴡᴇɴᴛ ᴡʀᴏɴɢ @iam_dacc !!")
+        return await query.edit_message_text("sᴏᴍᴇᴛʜɪɴɢ ᴡᴇɴᴛ ᴡʀᴏɴɢ.")
     elif img_url == 69:
         return await query.edit_message_text("ɴsғᴡ ɴᴏᴛ ᴀʟʟᴏᴡᴇᴅ !")
+    
     images = []
     modelName = [i['name'] for i in Models if i['id'] == modelId]
     for i in img_url:
         images.append(t.InputMediaPhoto(i))
     images[-1] = t.InputMediaPhoto(img_url[-1], caption=f"Your Prompt:\n`{promptData['prompt']}`")
+    
     await query.message.delete()
     try:
         del Database[auth_user]
     except KeyError:
         pass
-    await _.send_media_group(
+    
+    await bot.send_media_group(
         chat_id=query.message.chat.id,
         media=images,
         reply_to_message_id=promptData['reply_to_id']
     )
-
 
 
 # Run the bot
