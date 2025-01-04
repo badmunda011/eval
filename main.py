@@ -275,21 +275,6 @@ async def shellrunner(_, message: Message):
     await message.stop_propagation()
 
 
-
-# Start the bot asynchronously
-async def main():
-    async with bot:
-        await bot.start()
-        print("Bot started!")
-        await asyncio.Event().wait()  # Keep the bot running
-
-
-
-# Check if already connected before starting
-if not await bot.is_connected():
-    await bot.start()
-else:
-    print("Bot is already connected.")
-
+# Run the bot
 if __name__ == "__main__":
-    asyncio.get_event_loop().run_until_complete(main())
+    asyncio.run(main())
