@@ -277,4 +277,4 @@ async def shellrunner(_, message: Message):
 
 # Run the bot
 if __name__ == "__main__":
-    asyncio.run(main())
+    bot.run()
