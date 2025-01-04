@@ -103,4 +103,5 @@ async def ping(client, message: Message):
     await message.reply(f"Pong! Uptime: {uptime}")
 
 # Start the bot
+print("Bot Started") 
 bot.run()
