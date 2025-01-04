@@ -96,12 +96,12 @@ async def edit_or_reply(msg: Message, **kwargs):
     await func(**{k: v for k, v in kwargs.items() if k in spec})
 
 
-@app.on_edited_message(
+@bot.on_edited_message(
     filters.command("eval")
     & ~filters.forwarded
     & ~filters.via_bot
 )
-@app.on_message(
+@bot.on_message(
     filters.command("eval")
     & ~filters.forwarded
     & ~filters.via_bot
@@ -179,13 +179,13 @@ async def executor(client: app, message: Message):
         await edit_or_reply(message, text=final_output, reply_markup=keyboard)
 
 
-@app.on_callback_query(filters.regex(r"runtime"))
+@bot.on_callback_query(filters.regex(r"runtime"))
 async def runtime_func_cq(_, cq):
     runtime = cq.data.split(None, 1)[1]
     await cq.answer(runtime, show_alert=True)
 
 
-@app.on_callback_query(filters.regex("forceclose"))
+@bot.on_callback_query(filters.regex("forceclose"))
 async def forceclose_command(_, CallbackQuery):
     callback_data = CallbackQuery.data.strip()
     callback_request = callback_data.split(None, 1)[1]
@@ -204,12 +204,12 @@ async def forceclose_command(_, CallbackQuery):
         return
 
 
-@app.on_edited_message(
+@bot.on_edited_message(
     filters.command("sh")
     & ~filters.forwarded
     & ~filters.via_bot
 )
-@app.on_message(
+@bot.on_message(
     filters.command("sh")
     & ~filters.forwarded
     & ~filters.via_bot
