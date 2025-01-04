@@ -278,12 +278,10 @@ async def shellrunner(_, message: Message):
 
 # Start the bot asynchronously
 async def main():
-    async with app:
-        await app.start()
+    async with bot:
+        await bot.start()
         print("Bot started!")
         await asyncio.Event().wait()  # Keep the bot running
-
-
 
 
 if __name__ == "__main__":
