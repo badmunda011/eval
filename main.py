@@ -27,6 +27,7 @@ from pyrogram.enums import ParseMode
 API_ID = "12380656"
 API_HASH = "d927c13beaaf5110f25c505b7c071273"
 BOT_TOKEN = "7663505148:AAH0ZgYmJkLOpYh5LcJPyEfsLvag_e0tR6s"
+MODEL_NAME = "gemini-1.5-flash"
 
 bot = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN, parse_mode=ParseMode.MARKDOWN)
 
@@ -285,7 +286,7 @@ async def shellrunner(_, message: Message):
 
 
 
-MODEL_NAME = gemini-1.5-flash
+
 
 genai.configure(api_key="AIzaSyCdj8Mao0nFV7tcRMqwneMStcSEP4HTldU")
 
