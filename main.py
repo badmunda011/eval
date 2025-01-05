@@ -284,17 +284,12 @@ async def shellrunner(_, message: Message):
     await message.stop_propagation()
 
 
-"""
-Author: Bisnu Ray
-Telegram: https://t.me/SmartBisnuBio
-"""
 
-
-
+MODEL_NAME = gemini-1.5-flash
 
 genai.configure(api_key="AIzaSyCdj8Mao0nFV7tcRMqwneMStcSEP4HTldU")
 
-model = genai.GenerativeModel(gemini-1.5-flash)
+model = genai.GenerativeModel(MODEL_NAME)
 
 @bot.on_message(filters.command("gem"))
 async def gemi_handler(client: Client, message: Message):
