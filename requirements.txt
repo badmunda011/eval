@@ -3,3 +3,4 @@ tgcrypto
 git
 openai
 google-generativeai
+pillow
