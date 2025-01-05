@@ -20,7 +20,7 @@ API_ID = "12380656"
 API_HASH = "d927c13beaaf5110f25c505b7c071273"
 BOT_TOKEN = "7663505148:AAH0ZgYmJkLOpYh5LcJPyEfsLvag_e0tR6s"
 
-bot = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+bot = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN, parse_mode=ParseMode.MARKDOWN)
 
 @bot.on_message(filters.command("ping"))
 async def ping(client, message):
@@ -276,42 +276,77 @@ async def shellrunner(_, message: Message):
     await message.stop_propagation()
 
 
+"""
+Author: Bisnu Ray
+Telegram: https://t.me/SmartBisnuBio
+"""
 
-
-import openai
-from pyrogram import Client, filters
+import os
+import io
 import logging
+import PIL.Image
+from pyrogram.types import Message
+import google.generativeai as genai
+from pyrogram import Client, filters
+from pyrogram.enums import ParseMode
+from config import API_ID, API_HASH, BOT_TOKEN, GOOGLE_API_KEY, MODEL_NAME
 
-# Enable logging for debugging
-logging.basicConfig(level=logging.INFO)
-
-# Your OpenAI API key
-openai.api_key = 'sk-svcacct-ODSR6PDrMrri2FKqOcF3fllzsO_ozGpicR3c-ktg0XhFYv-k82m_zCtCxXVfDH_eLT3BlbkFJ_8cFz58nC4DNG0cjjEU_UchG7Z0UdPim7nrsnW6NbiqxJaGopkYa8IgvVyhOTM_AA'
 
 
-# Function to query OpenAI's GPT-3/4
-def ask_openai(prompt):
+genai.configure(api_key=GOOGLE_API_KEY)
+
+model = genai.GenerativeModel(MODEL_NAME)
+
+@bot.on_message(filters.command("gem"))
+async def gemi_handler(client: Client, message: Message):
+    loading_message = None
     try:
-        response = openai.Completion.create(
-            engine="gpt-3.5-turbo",  # You can choose different engines like "gpt-4", "text-curie", etc.
-            prompt=prompt,
-            max_tokens=100,
-            n=1,
-            stop=None,
-            temperature=0.7
-        )
-        return response.choices[0].text.strip()
+        loading_message = await message.reply_text("**Generating response, please wait...**")
+
+        if len(message.text.strip()) <= 5:
+            await message.reply_text("**Provide a prompt after the command.**")
+            return
+
+        prompt = message.text.split(maxsplit=1)[1]
+        response = model.generate_content(prompt)
+
+        response_text = response.text
+        if len(response_text) > 4000:
+            parts = [response_text[i:i + 4000] for i in range(0, len(response_text), 4000)]
+            for part in parts:
+                await message.reply_text(part)
+        else:
+            await message.reply_text(response_text)
+
     except Exception as e:
-        return f"Error: {e}"
+        await message.reply_text(f"**An error occurred: {str(e)}**")
+    finally:
+        if loading_message:
+            await loading_message.delete()
 
+@bot.on_message(filters.command("imgai"))
+async def generate_from_image(client: Client, message: Message):
+    if not message.reply_to_message or not message.reply_to_message.photo:
+        await message.reply_text("**Please reply to a photo for a response.**")
+        return
 
-# Command handler for receiving text messages and generating OpenAI responses
-@bot.on_message(filters.text)
-def handle_message(client, message):
-    user_text = message.text
-    message.reply("Processing your request...")
-    response = ask_openai(user_text)
-    message.reply(response)
+    prompt = message.command[1] if len(message.command) > 1 else message.reply_to_message.caption or "Describe this image."
+
+    processing_message = await message.reply_text("**Generating response, please wait...**")
+
+    try:
+        img_data = await client.download_media(message.reply_to_message, in_memory=True)
+        img = PIL.Image.open(io.BytesIO(img_data.getbuffer()))
+
+        response = model.generate_content([prompt, img])
+        response_text = response.text
+
+        await message.reply_text(response_text, parse_mode=None)
+    except Exception as e:
+        logging.error(f"Error during image analysis: {e}")
+        await message.reply_text("**An error occurred. Please try again.**")
+    finally:
+        await processing_message.delete()
 
 
 # Run the bot
