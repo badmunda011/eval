@@ -2,3 +2,4 @@ pyrogrammod
 tgcrypto
 git
 openai
+google-generativeai
