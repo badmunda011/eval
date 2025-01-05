@@ -472,7 +472,7 @@ async def selectModel(bot, query: t.CallbackQuery):
 
 
 # Replace with your own OpenAI API Key
-openai.api_key = "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"
+openai.api_key = "sk-svcacct-ODSR6PDrMrri2FKqOcF3fllzsO_ozGpicR3c-ktg0XhFYv-k82m_zCtCxXVfDH_eLT3BlbkFJ_8cFz58nC4DNG0cjjEU_UchG7Z0UdPim7nrsnW6NbiqxJaGopkYa8IgvVyhOTM_AA"
 
 # Function to get the AI response using OpenAI's GPT-3
 def get_ai_response(user_input):
