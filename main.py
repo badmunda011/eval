@@ -364,7 +364,7 @@ def generate_response(prompt):
     return response.json()
 
 
-@bot.on_message(filters.text & ~filters.command)
+@bot.on_message(filters.text)
 def handle_message(client, message):
     prompt = message.text
     response_data = generate_response(prompt)
