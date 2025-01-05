@@ -1,4 +1,4 @@
 pyrogrammod
 tgcrypto
 git
-openai==0.28
+openai
