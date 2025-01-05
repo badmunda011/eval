@@ -21,6 +21,13 @@ from pyrogram.types import Message
 import google.generativeai as genai
 from pyrogram import Client, filters
 from pyrogram.enums import ParseMode
+import os
+import requests
+from pyrogram import Client, filters
+
+# Set up your API key for Gemini
+API_KEY = 'AIzaSyCdj8Mao0nFV7tcRMqwneMStcSEP4HTldU'
+BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent'
 
 
 # Define bot credentials (Use your own token and API credentials)
@@ -342,6 +349,27 @@ async def generate_from_image(client: Client, message: Message):
         await message.reply_text("**An error occurred. Please try again.**")
     finally:
         await processing_message.delete()
+
+
+
+def generate_response(prompt):
+    headers = {
+        'Authorization': f'Bearer {API_KEY}',
+        'Content-Type': 'application/json'
+    }
+    data = {
+        'contents': [{'parts': [{'text': prompt}]}]
+    }
+    response = requests.post(BASE_URL, headers=headers, json=data)
+    return response.json()
+
+
+@bot.on_message(filters.text & ~filters.command)
+def handle_message(client, message):
+    prompt = message.text
+    response_data = generate_response(prompt)
+    response_text = response_data['contents'][0]['parts'][0]['text']
+    message.reply_text(response_text)
 
 
 # Run the bot
