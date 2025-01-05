@@ -371,6 +371,44 @@ def handle_message(client, message):
     response_text = response_data['contents'][0]['parts'][0]['text']
     message.reply_text(response_text)
 
+from pyrogram import Client, filters
+from pyrogram.enums import ChatAction
+import requests
+import time
+
+# Hugging Face Inference API URL for a text generation model
+HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/gpt2"
+
+# Function to get AI response from Hugging Face
+def get_ai_response(user_input):
+    headers = {
+        "Authorization": "Bearer YOUR_HUGGINGFACE_API_KEY"  # Optional, but recommended for higher limits
+    }
+    payload = {
+        "inputs": user_input,
+        "options": {"use_cache": False}
+    }
+    response = requests.post(HUGGINGFACE_API_URL, headers=headers, json=payload)
+    if response.status_code == 200:
+        return response.json()[0]['generated_text']
+    else:
+        return "I'm sorry, I couldn't process your request at the moment."
+
+@bot.on_message(filters.text)
+def fitness_bot(client, message):
+    # Simulate typing action
+    client.send_chat_action(message.chat.id, ChatAction.TYPING)
+    
+    # Simulate processing time
+    time.sleep(2)
+    
+    # Get AI response
+    ai_response = get_ai_response(message.text)
+
+    # Send the AI response back to the user
+    client.send_message(message.chat.id, ai_response)
+
+
 
 # Run the bot
 if __name__ == "__main__":
