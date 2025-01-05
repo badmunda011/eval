@@ -11,7 +11,8 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from datetime import datetime
 from inspect import getfullargspec
 from io import StringIO
-from time import time 
+from time import time
+import openai
 
 
 # Define bot credentials (Use your own token and API credentials)
@@ -467,6 +468,41 @@ async def selectModel(bot, query: t.CallbackQuery):
         media=images,
         reply_to_message_id=promptData['reply_to_id']
     )
+
+
+
+# Replace with your own OpenAI API Key
+openai.api_key = "fc90fdc4d9e85f316fece603f46a6cd9"
+
+# Function to get the AI response using OpenAI's GPT-3
+def get_ai_response(user_input):
+    try:
+        response = openai.Completion.create(
+            engine="text-davinci-003",  # You can use other models like text-ada, text-babbage, etc.
+            prompt=user_input,
+            max_tokens=150,
+            n=1,
+            stop=None,
+            temperature=0.7,
+        )
+        return response.choices[0].text.strip()
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+@bot.on_message(filters.text)
+async def ai_reply(client, message):
+    # Get the user's message
+    user_message = message.text.strip()
+
+    # Send typing action
+    await message.reply("Thinking...", quote=True)
+
+    # Get AI's response
+    ai_response = get_ai_response(user_message)
+
+    # Send the AI's response to the user
+    await message.reply(ai_response, quote=True)
+
 
 
 # Run the bot
