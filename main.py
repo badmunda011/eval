@@ -293,7 +293,7 @@ openai.api_key = 'sk-svcacct-ODSR6PDrMrri2FKqOcF3fllzsO_ozGpicR3c-ktg0XhFYv-k82m
 def ask_openai(prompt):
     try:
         response = openai.Completion.create(
-            engine="text-curie-001",  # You can choose different engines like "gpt-4", "text-curie", etc.
+            engine="gpt-3.5-turbo",  # You can choose different engines like "gpt-4", "text-curie", etc.
             prompt=prompt,
             max_tokens=100,
             n=1,
@@ -306,7 +306,7 @@ def ask_openai(prompt):
 
 
 # Command handler for receiving text messages and generating OpenAI responses
-@bot.on_message(filters.text & ~filters.command("ai"))
+@bot.on_message(filters.text)
 def handle_message(client, message):
     user_text = message.text
     message.reply("Processing your request...")
