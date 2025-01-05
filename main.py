@@ -478,7 +478,7 @@ openai.api_key = "sk-svcacct-ODSR6PDrMrri2FKqOcF3fllzsO_ozGpicR3c-ktg0XhFYv-k82m
 def get_ai_response(user_input):
     try:
         response = openai.Completion.create(
-            engine="gpt-4",  # You can use other models like text-ada, text-babbage, etc.
+            engine="gpt-3.5-turbo",  # You can use other models like text-ada, text-babbage, etc.
             prompt=user_input,
             max_tokens=150,
             n=1,
