@@ -293,7 +293,7 @@ from config import API_ID, API_HASH, BOT_TOKEN, GOOGLE_API_KEY, MODEL_NAME
 
 
 
-genai.configure(api_key=GOOGLE_API_KEY)
+genai.configure(api_key="AIzaSyCdj8Mao0nFV7tcRMqwneMStcSEP4HTldU")
 
 model = genai.GenerativeModel(MODEL_NAME)
 
