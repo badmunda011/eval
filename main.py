@@ -21,7 +21,6 @@ from pyrogram.types import Message
 import google.generativeai as genai
 from pyrogram import Client, filters
 from pyrogram.enums import ParseMode
-from config import API_ID, API_HASH, BOT_TOKEN, GOOGLE_API_KEY, MODEL_NAME
 
 
 # Define bot credentials (Use your own token and API credentials)
