@@ -214,61 +214,20 @@ async def shellrunner(_, message: Message):
     await message.stop_propagation()
 
 
-import requests
-from pyrogram import Client, filters
+import pollinations as ai
 
+model_obj = ai.Model()
 
-def download_image(image_url):
-    # Fetching the image from the URL
-    response = requests.get(image_url)
-    
-    # Check if the request was successful
-    if response.status_code == 200:
-        # Saving the image as a temporary file
-        with open('image.jpg', 'wb') as file:
-            file.write(response.content)
-        return 'image.jpg'
-    else:
-        print(f"Failed to download image. Status code: {response.status_code}")
-        return None
+image = model_obj.generate(
+    prompt=f'Sun Image',
+    model=ai.flux,
+    width=1024,
+    height=1500,
+    seed=963775
+)
+image.save('image-output.jpg')
 
-# Function to send image to the group or chat
-def send_image_to_chat(chat_id, image_path):
-    if image_path:
-        with app:
-            app.send_photo(chat_id, photo=image_path)
-    else:
-        with app:
-            app.send_message(chat_id, "Failed to generate the image. Please try again later.")
-
-# Image generation details
-def generate_image_url(prompt):
-    width = 1080
-    height = 650
-    seed = 42  # Each seed generates a new image variation
-    model = 'flux'  # Using 'flux' as default if model is not provided
-    image_url = f"https://pollinations.ai/p/{prompt}?width={width}&height={height}&seed={seed}&model={model}"
-    return image_url
-
-# Define the handler for the /img command
-@app.on_message(filters.command('ni'))  # Only respond to /img command
-def handle_img_command(client, message):
-    # Extract the prompt from the command input (everything after /img)
-    command_parts = message.text.split(' ', 1)  # Split into command and argument
-    if len(command_parts) > 1:
-        prompt = command_parts[1]  # The text after /img is the prompt
-    else:
-        prompt = "Expert Advice: Cooking with Cranberry Juice Like a Pro"  # Default prompt if no argument is given
-    
-    # Generate the image URL based on the prompt
-    image_url = generate_image_url(prompt)
-    
-    # Download the image
-    image_path = download_image(image_url)
-    
-    # Send the image to the group or user who sent the /img command
-    send_image_to_chat(message.chat.id, image_path)
-
+print(image.url)
 
 if __name__ == "__main__":
     app.run()
