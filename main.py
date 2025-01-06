@@ -216,18 +216,24 @@ async def shellrunner(_, message: Message):
 
 import pollinations as ai
 
+# Instantiate the model
 model_obj = ai.Model()
 
-image = model_obj.generate(
-    prompt=f'Sun Image',
-    model=ai.flux,
+# Generate the image with the correct method
+image = model_obj.create_image(  # use the correct method, like `create_image`, `generate_image`, etc.
+    prompt='Sun Image',
+    model='flux',  # specify the model if needed
     width=1024,
     height=1500,
     seed=963775
 )
+
+# Save the image to a file
 image.save('image-output.jpg')
 
+# Print the image URL
 print(image.url)
+
 
 if __name__ == "__main__":
     app.run()
