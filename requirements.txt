@@ -4,3 +4,4 @@ git
 openai
 google-generativeai
 pillow
+pollinations
