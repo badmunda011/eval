@@ -1,7 +1,8 @@
 pyrogrammod
 tgcrypto
-git
 openai
 google-generativeai
 pillow
 pollinations
+gtts
+google.generativeai
