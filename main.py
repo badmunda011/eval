@@ -27,7 +27,7 @@ app = PyroClient(
            bot_token=BOT_TOKEN
 )
 
-app2 = TelegramClient(
+Bad = TelegramClient(
     "eval_telethon",
     TELETHON_API_ID,
     TELETHON_API_HASH
@@ -221,7 +221,7 @@ async def shellrunner(_, message: Message):
     await message.stop_propagation()
 
 # Telethon Bot Handlers
-@app2.on(events.NewMessage(pattern='/eval2'))
+@Bad.on(events.NewMessage(pattern='/eval2'))
 async def eval_handler(event):
     if len(event.raw_text.split()) < 2:
         await event.reply("ᴡʜᴀᴛ ʏᴏᴜ ᴡᴀɴɴᴀ ᴇxᴇᴄᴜᴛᴇ ʙᴀʙʏ [ᴛᴇʟᴇ] ?")
@@ -273,7 +273,7 @@ async def eval_handler(event):
         ]
         await event.reply(final_output, buttons=buttons)
 
-@app2.on(events.CallbackQuery(data="forceclose"))
+@Bad.on(events.CallbackQuery(data="forceclose"))
 async def forceclose_callback(event):
     if event.sender_id != int(event.data.decode().split("|")[1]):
         await event.answer("» ɪᴛ'ʟʟ ʙᴇ ʙᴇᴛᴛᴇʀ ɪғ ʏᴏᴜ sᴛᴀʏ ɪɴ ʏᴏᴜʀ ʟɪᴍɪᴛs ʙᴀʙʏ.", alert=True)
@@ -282,5 +282,5 @@ async def forceclose_callback(event):
 
 if __name__ == "__main__":
     app.run()
-    app2.run_until_disconnected()
+    Bad.run_until_disconnected()
     idle()
