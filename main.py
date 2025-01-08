@@ -11,7 +11,7 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 API_ID = "16457832"
 API_HASH = "3030874d0befdb5d05597deacc3e83ab"
-BOT_TOKEN = "7663505148:AAH0ZgYmJkLOpYh5LcJPyEfsLvag_e0tR6s"
+BOT_TOKEN = "7280541678:AAF064IfS1TXtybb0fcHOcfDx3dhp1uZOFY"
 
 app = Client(
            name="EVAL", 
