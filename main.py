@@ -1,4 +1,6 @@
 import os
+import shutil
+import asyncio
 import re
 import subprocess
 import sys
@@ -6,6 +8,7 @@ import traceback
 from inspect import getfullargspec
 from io import StringIO
 from time import time
+from pyrogram.types import BotCommand
 from pyrogram import filters, Client as PyroClient, idle
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from telethon import TelegramClient, events, Button
@@ -286,6 +289,19 @@ async def forceclose_callback(event):
 async def runtime_callback(event):
     runtime = event.data.decode().split(None, 1)[1]
     await event.answer(runtime, alert=True)
+
+
+
+@app.on_edited_message(
+    filters.command("rs")
+    & ~filters.forwarded
+    & ~filters.via_bot
+)
+async def restart(client: Client, message: Message):
+    reply = await message.reply_text("**🔁 Rᴇsᴛᴀʀᴛɪɴɢ 🔥 ...**")
+    await message.delete()
+    await reply.edit_text("🥀 SᴜᴄᴄᴇssFᴜʟʟʏ RᴇSᴛᴀʀᴛᴇᴅ\n ︎ᴇᴠᴀʟʙᴏᴛ 🔥 ...\n\n💕 Pʟᴇᴀsᴇ Wᴀɪᴛ 1-2 MɪN Fᴏʀ\nLᴏᴀᴅ Usᴇʀ Pʟᴜɢɪɴs ✨ ...</b>")
+    os.system(f"kill -9 {os.getpid()} && python3 bash start")
 
 if __name__ == "__main__":
     app.run()
