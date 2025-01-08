@@ -6,20 +6,32 @@ import traceback
 from inspect import getfullargspec
 from io import StringIO
 from time import time
-from pyrogram import filters, Client, idle
+from pyrogram import filters, Client as PyroClient, idle
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
+from telethon import TelegramClient, events, Button
 
+# Pyrogram Bot API
 API_ID = "16457832"
 API_HASH = "3030874d0befdb5d05597deacc3e83ab"
 BOT_TOKEN = "7280541678:AAF064IfS1TXtybb0fcHOcfDx3dhp1uZOFY"
 
-app = Client(
+# Telethon Bot API
+TELETHON_API_ID = "16457832"
+TELETHON_API_HASH = "3030874d0befdb5d05597deacc3e83ab"
+TELETHON_BOT_TOKEN = "7280541678:AAF064IfS1TXtybb0fcHOcfDx3dhp1uZOFY"
+
+pyro_app = PyroClient(
            name="EVAL", 
            api_id=API_ID, 
            api_hash=API_HASH, 
            bot_token=BOT_TOKEN
 )
 
+telethon_app = TelegramClient(
+    "eval_telethon",
+    TELETHON_API_ID,
+    TELETHON_API_HASH
+).start(bot_token=TELETHON_BOT_TOKEN)
 
 async def aexec(code, client, message):
     exec(
@@ -28,24 +40,22 @@ async def aexec(code, client, message):
     )
     return await locals()["__aexec"](client, message)
 
-
 async def edit_or_reply(msg: Message, **kwargs):
     func = msg.edit_text if msg.from_user.is_self else msg.reply
     spec = getfullargspec(func.__wrapped__).args
     await func(**{k: v for k, v in kwargs.items() if k in spec})
 
-
-@app.on_edited_message(
+@pyro_app.on_edited_message(
     filters.command("eval")
     & ~filters.forwarded
     & ~filters.via_bot
 )
-@app.on_message(
+@pyro_app.on_message(
     filters.command("eval")
     & ~filters.forwarded
     & ~filters.via_bot
 )
-async def executor(client: app, message: Message):
+async def executor(client: pyro_app, message: Message):
     if len(message.command) < 2:
         return await edit_or_reply(message, text="<b>ᴡʜᴀᴛ ʏᴏᴜ ᴡᴀɴɴᴀ ᴇxᴇᴄᴜᴛᴇ ʙᴀʙʏ ?</b>")
     try:
@@ -117,14 +127,12 @@ async def executor(client: app, message: Message):
         )
         await edit_or_reply(message, text=final_output, reply_markup=keyboard)
 
-
-@app.on_callback_query(filters.regex(r"runtime"))
+@pyro_app.on_callback_query(filters.regex(r"runtime"))
 async def runtime_func_cq(_, cq):
     runtime = cq.data.split(None, 1)[1]
     await cq.answer(runtime, show_alert=True)
 
-
-@app.on_callback_query(filters.regex("forceclose"))
+@pyro_app.on_callback_query(filters.regex("forceclose"))
 async def forceclose_command(_, CallbackQuery):
     callback_data = CallbackQuery.data.strip()
     callback_request = callback_data.split(None, 1)[1]
@@ -142,13 +150,12 @@ async def forceclose_command(_, CallbackQuery):
     except:
         return
 
-
-@app.on_edited_message(
+@pyro_app.on_edited_message(
     filters.command("sh")
     & ~filters.forwarded
     & ~filters.via_bot
 )
-@app.on_message(
+@pyro_app.on_message(
     filters.command("sh")
     & ~filters.forwarded
     & ~filters.via_bot
@@ -201,7 +208,7 @@ async def shellrunner(_, message: Message):
         if len(output) > 4096:
             with open("output.txt", "w+") as file:
                 file.write(output)
-            await app.send_document(
+            await pyro_app.send_document(
                 message.chat.id,
                 "output.txt",
                 reply_to_message_id=message.id,
@@ -213,8 +220,67 @@ async def shellrunner(_, message: Message):
         await edit_or_reply(message, text="<b>OUTPUT :</b>\n<code>None</code>")
     await message.stop_propagation()
 
+# Telethon Bot Handlers
+@telethon_app.on(events.NewMessage(pattern='/eval'))
+async def eval_handler(event):
+    if len(event.raw_text.split()) < 2:
+        await event.reply("ᴡʜᴀᴛ ʏᴏᴜ ᴡᴀɴɴᴀ ᴇxᴇᴄᴜᴛᴇ ʙᴀʙʏ ?")
+        return
+    cmd = event.raw_text.split(" ", maxsplit=1)[1]
+    t1 = time()
+    old_stderr = sys.stderr
+    old_stdout = sys.stdout
+    redirected_output = sys.stdout = StringIO()
+    redirected_error = sys.stderr = StringIO()
+    stdout, stderr, exc = None, None, None
+    try:
+        exec(
+            "async def __aexec(event): "
+            + "".join(f"\n {a}" for a in cmd.split("\n"))
+        )
+        await locals()["__aexec"](event)
+    except Exception:
+        exc = traceback.format_exc()
+    stdout = redirected_output.getvalue()
+    stderr = redirected_error.getvalue()
+    sys.stdout = old_stdout
+    sys.stderr = old_stderr
+    evaluation = "\n"
+    if exc:
+        evaluation += exc
+    elif stderr:
+        evaluation += stderr
+    elif stdout:
+        evaluation += stdout
+    else:
+        evaluation += "Success"
+    final_output = f"<b>⥤ ʀᴇsᴜʟᴛ :</b>\n<pre language='python'>{evaluation}</pre>"
+    if len(final_output) > 4096:
+        filename = "output.txt"
+        with open(filename, "w+", encoding="utf8") as out_file:
+            out_file.write(str(evaluation))
+        t2 = time()
+        buttons = [
+            Button.inline(f"⏳ {round(t2-t1, 3)} Seconds"),
+        ]
+        await event.reply(file=filename, buttons=buttons)
+        os.remove(filename)
+    else:
+        t2 = time()
+        buttons = [
+            Button.inline(f"⏳ {round(t2-t1, 3)} Seconds"),
+            Button.inline("🗑", data=f"forceclose|{event.sender_id}"),
+        ]
+        await event.reply(final_output, buttons=buttons)
 
+@telethon_app.on(events.CallbackQuery(data="forceclose"))
+async def forceclose_callback(event):
+    if event.sender_id != int(event.data.decode().split("|")[1]):
+        await event.answer("» ɪᴛ'ʟʟ ʙᴇ ʙᴇᴛᴛᴇʀ ɪғ ʏᴏᴜ sᴛᴀʏ ɪɴ ʏᴏᴜʀ ʟɪᴍɪᴛs ʙᴀʙʏ.", alert=True)
+        return
+    await event.delete()
 
 if __name__ == "__main__":
-    app.run()
+    pyro_app.run()
+    telethon_app.run_until_disconnected()
     idle()
