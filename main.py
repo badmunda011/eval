@@ -221,7 +221,7 @@ async def shellrunner(_, message: Message):
     await message.stop_propagation()
 
 # Telethon Bot Handlers
-@telethon_app.on(events.NewMessage(pattern='/eval'))
+@telethon_app.on(events.NewMessage(pattern='/eval2'))
 async def eval_handler(event):
     if len(event.raw_text.split()) < 2:
         await event.reply("ᴡʜᴀᴛ ʏᴏᴜ ᴡᴀɴɴᴀ ᴇxᴇᴄᴜᴛᴇ ʙᴀʙʏ ?")
