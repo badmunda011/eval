@@ -9,6 +9,8 @@ from time import time
 from pyrogram import filters, Client as PyroClient, idle
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from telethon import TelegramClient, events, Button
+from telethon.tl.custom import Button
+
 
 # Pyrogram Bot API
 API_ID = "16457832"
@@ -279,6 +281,11 @@ async def forceclose_callback(event):
         await event.answer("» ɪᴛ'ʟʟ ʙᴇ ʙᴇᴛᴛᴇʀ ɪғ ʏᴏᴜ sᴛᴀʏ ɪɴ ʏᴏᴜʀ ʟɪᴍɪᴛs ʙᴀʙʏ.", alert=True)
         return
     await event.delete()
+
+@Bad.on(events.CallbackQuery(data=re.compile(b"runtime")))
+async def runtime_callback(event):
+    runtime = event.data.decode().split(None, 1)[1]
+    await event.answer(runtime, alert=True)
 
 if __name__ == "__main__":
     app.run()
