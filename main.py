@@ -6,7 +6,7 @@ import traceback
 from inspect import getfullargspec
 from io import StringIO
 from time import time
-from pyrogram import filters, Client
+from pyrogram import filters, Client, idle
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 API_ID = "16457832"
@@ -217,3 +217,4 @@ async def shellrunner(_, message: Message):
 
 if __name__ == "__main__":
     app.run()
+    idle()
