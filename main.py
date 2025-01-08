@@ -20,14 +20,14 @@ TELETHON_API_ID = "16457832"
 TELETHON_API_HASH = "3030874d0befdb5d05597deacc3e83ab"
 TELETHON_BOT_TOKEN = "7280541678:AAF064IfS1TXtybb0fcHOcfDx3dhp1uZOFY"
 
-pyro_app = PyroClient(
+app = PyroClient(
            name="EVAL", 
            api_id=API_ID, 
            api_hash=API_HASH, 
            bot_token=BOT_TOKEN
 )
 
-telethon_app = TelegramClient(
+app2 = TelegramClient(
     "eval_telethon",
     TELETHON_API_ID,
     TELETHON_API_HASH
@@ -45,17 +45,17 @@ async def edit_or_reply(msg: Message, **kwargs):
     spec = getfullargspec(func.__wrapped__).args
     await func(**{k: v for k, v in kwargs.items() if k in spec})
 
-@pyro_app.on_edited_message(
+@app.on_edited_message(
     filters.command("eval")
     & ~filters.forwarded
     & ~filters.via_bot
 )
-@pyro_app.on_message(
+@app.on_message(
     filters.command("eval")
     & ~filters.forwarded
     & ~filters.via_bot
 )
-async def executor(client: pyro_app, message: Message):
+async def executor(client: app, message: Message):
     if len(message.command) < 2:
         return await edit_or_reply(message, text="<b>ᴡʜᴀᴛ ʏᴏᴜ ᴡᴀɴɴᴀ ᴇxᴇᴄᴜᴛᴇ ʙᴀʙʏ ?</b>")
     try:
@@ -127,12 +127,12 @@ async def executor(client: pyro_app, message: Message):
         )
         await edit_or_reply(message, text=final_output, reply_markup=keyboard)
 
-@pyro_app.on_callback_query(filters.regex(r"runtime"))
+@app.on_callback_query(filters.regex(r"runtime"))
 async def runtime_func_cq(_, cq):
     runtime = cq.data.split(None, 1)[1]
     await cq.answer(runtime, show_alert=True)
 
-@pyro_app.on_callback_query(filters.regex("forceclose"))
+@app.on_callback_query(filters.regex("forceclose"))
 async def forceclose_command(_, CallbackQuery):
     callback_data = CallbackQuery.data.strip()
     callback_request = callback_data.split(None, 1)[1]
@@ -150,12 +150,12 @@ async def forceclose_command(_, CallbackQuery):
     except:
         return
 
-@pyro_app.on_edited_message(
+@app.on_edited_message(
     filters.command("sh")
     & ~filters.forwarded
     & ~filters.via_bot
 )
-@pyro_app.on_message(
+@app.on_message(
     filters.command("sh")
     & ~filters.forwarded
     & ~filters.via_bot
@@ -208,7 +208,7 @@ async def shellrunner(_, message: Message):
         if len(output) > 4096:
             with open("output.txt", "w+") as file:
                 file.write(output)
-            await pyro_app.send_document(
+            await app.send_document(
                 message.chat.id,
                 "output.txt",
                 reply_to_message_id=message.id,
@@ -221,7 +221,7 @@ async def shellrunner(_, message: Message):
     await message.stop_propagation()
 
 # Telethon Bot Handlers
-@telethon_app.on(events.NewMessage(pattern='/eval2'))
+@app2.on(events.NewMessage(pattern='/eval2'))
 async def eval_handler(event):
     if len(event.raw_text.split()) < 2:
         await event.reply("ᴡʜᴀᴛ ʏᴏᴜ ᴡᴀɴɴᴀ ᴇxᴇᴄᴜᴛᴇ ʙᴀʙʏ ?")
@@ -273,7 +273,7 @@ async def eval_handler(event):
         ]
         await event.reply(final_output, buttons=buttons)
 
-@telethon_app.on(events.CallbackQuery(data="forceclose"))
+@app2.on(events.CallbackQuery(data="forceclose"))
 async def forceclose_callback(event):
     if event.sender_id != int(event.data.decode().split("|")[1]):
         await event.answer("» ɪᴛ'ʟʟ ʙᴇ ʙᴇᴛᴛᴇʀ ɪғ ʏᴏᴜ sᴛᴀʏ ɪɴ ʏᴏᴜʀ ʟɪᴍɪᴛs ʙᴀʙʏ.", alert=True)
@@ -281,6 +281,6 @@ async def forceclose_callback(event):
     await event.delete()
 
 if __name__ == "__main__":
-    pyro_app.run()
-    telethon_app.run_until_disconnected()
+    app.run()
+    app2.run_until_disconnected()
     idle()
