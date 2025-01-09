@@ -14,6 +14,9 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from telethon import TelegramClient, events, Button
 from telethon.tl.custom import Button
 
+# Setup logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 # Pyrogram Bot API
 API_ID = "16457832"
