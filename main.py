@@ -315,13 +315,14 @@ async def install_plugin(client, message):
             with open(file_path, "r") as file:
                 code = file.read()
             
-            # Save the code to a new .py file in the current directory
+            # Save the code to new .py files for both Pyrogram and Telethon
             plugin_name = os.path.splitext(document.file_name)[0]
-            with open(f"{plugin_name}.py", "w") as plugin_file:
-                plugin_file.write(code)
+            with open(f"pyrogram_{plugin_name}.py", "w") as plugin_file_pyrogram, open(f"telethon_{plugin_name}.py", "w") as plugin_file_telethon:
+                plugin_file_pyrogram.write(code)
+                plugin_file_telethon.write(code)
 
-            await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' installed successfully from file.</b>")
-            logger.info(f"Plugin '{plugin_name}' installed successfully from file.")
+            await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' installed successfully for both Pyrogram and Telethon from file.</b>")
+            logger.info(f"Plugin '{plugin_name}' installed successfully for both Pyrogram and Telethon from file.")
         except Exception as e:
             await edit_or_reply(message, text=f"<b>Failed to install plugin from file:</b>\n<pre>{str(e)}</pre>")
             logger.error(f"Failed to install plugin from file: {str(e)}")
@@ -332,11 +333,12 @@ async def install_plugin(client, message):
         try:
             plugin_code = message.text.split(" ", maxsplit=1)[1].strip()
             plugin_name = "custom_plugin"
-            with open(f"{plugin_name}.py", "w") as plugin_file:
-                plugin_file.write(plugin_code)
+            with open(f"pyrogram_{plugin_name}.py", "w") as plugin_file_pyrogram, open(f"telethon_{plugin_name}.py", "w") as plugin_file_telethon:
+                plugin_file_pyrogram.write(plugin_code)
+                plugin_file_telethon.write(plugin_code)
             
-            await edit_or_reply(message, text=f"<b>Plugin installed successfully from command.</b>")
-            logger.info("Plugin installed successfully from command.")
+            await edit_or_reply(message, text=f"<b>Plugin installed successfully for both Pyrogram and Telethon from command.</b>")
+            logger.info("Plugin installed successfully for both Pyrogram and Telethon from command.")
         except Exception as e:
             await edit_or_reply(message, text=f"<b>Failed to install plugin from command:</b>\n<pre>{str(e)}</pre>")
             logger.error(f"Failed to install plugin from command: {str(e)}")
@@ -344,134 +346,18 @@ async def install_plugin(client, message):
 # Modified uninstall command
 @app.on_message(filters.command("uninstall") & ~filters.forwarded & ~filters.via_bot)
 async def uninstall_plugin(client, message):
-    if message.reply_to_message and message.reply_to_message.document:
-        # Handle uninstallation from a .py file reply
-        try:
-            document = message.reply_to_message.document
-            plugin_name = os.path.splitext(document.file_name)[0]
-            os.remove(f"{plugin_name}.py")
-            await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' uninstalled successfully from file.</b>")
-            logger.info(f"Plugin '{plugin_name}' uninstalled successfully from file.")
-        except Exception as e:
-            await edit_or_reply(message, text=f"<b>Failed to uninstall plugin from file:</b>\n<pre>{str(e)}</pre>")
-            logger.error(f"Failed to uninstall plugin from file: {str(e)}")
-    else:
-        # Handle uninstallation from command text
-        if len(message.command) < 2:
-            return await edit_or_reply(message, text="<b>ᴇxᴀᴍᴩʟᴇ :</b>\n/uninstall <plugin_name>")
-        plugin_name = message.text.split(" ", maxsplit=1)[1].strip()
-        try:
-            os.remove(f"{plugin_name}.py")
-            await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' uninstalled successfully.</b>")
-            logger.info(f"Plugin '{plugin_name}' uninstalled successfully.")
-        except Exception as e:
-            await edit_or_reply(message, text=f"<b>Failed to uninstall plugin '{plugin_name}':</b>\n<pre>{str(e)}</pre>")
-            logger.error(f"Failed to uninstall plugin '{plugin_name}': {str(e)}")
-
-# Ensure that the installation and uninstallation actions persist across restarts if desired.
-# Implement a mechanism to track installed plugins and load them at startup.
-# This example assumes a simple tracking mechanism using a file to store the names of installed plugins.
-
-INSTALLED_PLUGINS_FILE = "installed_plugins.txt"
-
-def load_installed_plugins():
-    if os.path.exists(INSTALLED_PLUGINS_FILE):
-        with open(INSTALLED_PLUGINS_FILE, "r") as f:
-            plugins = f.read().splitlines()
-        return plugins
-    return []
-
-def save_installed_plugin(plugin_name):
-    with open(INSTALLED_PLUGINS_FILE, "a") as f:
-        f.write(f"{plugin_name}\n")
-
-def remove_installed_plugin(plugin_name):
-    if os.path.exists(INSTALLED_PLUGINS_FILE):
-        with open(INSTALLED_PLUGINS_FILE, "r") as f:
-            plugins = f.read().splitlines()
-        plugins = [p for p in plugins if p != plugin_name]
-        with open(INSTALLED_PLUGINS_FILE, "w") as f:
-            f.write("\n".join(plugins))
-
-# Load installed plugins at startup
-installed_plugins = load_installed_plugins()
-for plugin in installed_plugins:
+    if len(message.command) < 2:
+        return await edit_or_reply(message, text="<b>ᴇxᴀᴍᴩʟᴇ :</b>\n/uninstall <plugin_name>")
+    plugin_name = message.text.split(" ", maxsplit=1)[1].strip()
     try:
-        __import__(plugin)
-        logger.info(f"Loaded plugin '{plugin}' at startup.")
+        os.remove(f"pyrogram_{plugin_name}.py")
+        os.remove(f"telethon_{plugin_name}.py")
+        await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' uninstalled successfully for both Pyrogram and Telethon.</b>")
+        logger.info(f"Plugin '{plugin_name}' uninstalled successfully for both Pyrogram and Telethon.")
     except Exception as e:
-        logger.error(f"Failed to load plugin '{plugin}' at startup: {str(e)}")
+        await edit_or_reply(message, text=f"<b>Failed to uninstall plugin '{plugin_name}':</b>\n<pre>{str(e)}</pre>")
+        logger.error(f"Failed to uninstall plugin '{plugin_name}': {str(e)}")
 
-# Modify the install_plugin and uninstall_plugin functions to update the tracking file
-# when a plugin is installed or uninstalled.
-
-# Update install_plugin function
-@app.on_message(filters.command("install") & ~filters.forwarded & ~filters.via_bot)
-async def install_plugin(client, message):
-    if message.reply_to_message and message.reply_to_message.document:
-        # Handle installation from a .py file reply
-        try:
-            document = message.reply_to_message.document
-            file_path = await client.download_media(document)
-            with open(file_path, "r") as file:
-                code = file.read()
-
-            # Save the code to a new .py file in the current directory
-            plugin_name = os.path.splitext(document.file_name)[0]
-            with open(f"{plugin_name}.py", "w") as plugin_file:
-                plugin_file.write(code)
-
-            save_installed_plugin(plugin_name)
-            await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' installed successfully from file.</b>")
-            logger.info(f"Plugin '{plugin_name}' installed successfully from file.")
-        except Exception as e:
-            await edit_or_reply(message, text=f"<b>Failed to install plugin from file:</b>\n<pre>{str(e)}</pre>")
-            logger.error(f"Failed to install plugin from file: {str(e)}")
-    else:
-        # Handle installation from command text
-        if len(message.command) < 2:
-            return await edit_or_reply(message, text="<b>ᴇxᴀᴍᴩʟᴇ :</b>\n/install <plugin_code>")
-        try:
-            plugin_code = message.text.split(" ", maxsplit=1)[1].strip()
-            plugin_name = "custom_plugin"
-            with open(f"{plugin_name}.py", "w") as plugin_file:
-                plugin_file.write(plugin_code)
-            
-            save_installed_plugin(plugin_name)
-            await edit_or_reply(message, text=f"<b>Plugin installed successfully from command.</b>")
-            logger.info("Plugin installed successfully from command.")
-        except Exception as e:
-            await edit_or_reply(message, text=f"<b>Failed to install plugin from command:</b>\n<pre>{str(e)}</pre>")
-            logger.error(f"Failed to install plugin from command: {str(e)}")
-
-# Update uninstall_plugin function
-@app.on_message(filters.command("uninstall") & ~filters.forwarded & ~filters.via_bot)
-async def uninstall_plugin(client, message):
-    if message.reply_to_message and message.reply_to_message.document:
-        # Handle uninstallation from a .py file reply
-        try:
-            document = message.reply_to_message.document
-            plugin_name = os.path.splitext(document.file_name)[0]
-            os.remove(f"{plugin_name}.py")
-            remove_installed_plugin(plugin_name)
-            await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' uninstalled successfully from file.</b>")
-            logger.info(f"Plugin '{plugin_name}' uninstalled successfully from file.")
-        except Exception as e:
-            await edit_or_reply(message, text=f"<b>Failed to uninstall plugin from file:</b>\n<pre>{str(e)}</pre>")
-            logger.error(f"Failed to uninstall plugin from file: {str(e)}")
-    else:
-        # Handle uninstallation from command text
-        if len(message.command) < 2:
-            return await edit_or_reply(message, text="<b>ᴇxᴀᴍᴩʟᴇ :</b>\n/uninstall <plugin_name>")
-        plugin_name = message.text.split(" ", maxsplit=1)[1].strip()
-        try:
-            os.remove(f"{plugin_name}.py")
-            remove_installed_plugin(plugin_name)
-            await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' uninstalled successfully.</b>")
-            logger.info(f"Plugin '{plugin_name}' uninstalled successfully.")
-        except Exception as e:
-            await edit_or_reply(message, text=f"<b>Failed to uninstall plugin '{plugin_name}':</b>\n<pre>{str(e)}</pre>")
-            logger.error(f"Failed to uninstall plugin '{plugin_name}': {str(e)}")
 
 # Restart command to ensure commands persist across restarts
 @app.on_message(filters.command("rs") & ~filters.forwarded & ~filters.via_bot)
