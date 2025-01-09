@@ -55,6 +55,7 @@ async def edit_or_reply(msg: Message, **kwargs):
     spec = getfullargspec(func.__wrapped__).args
     await func(**{k: v for k, v in kwargs.items() if k in spec})
 
+# Pyrogram eval command
 @app.on_edited_message(
     filters.command("eval")
     & ~filters.forwarded
@@ -66,12 +67,19 @@ async def edit_or_reply(msg: Message, **kwargs):
     & ~filters.via_bot
 )
 async def executor(client: app, message: Message):
-    if len(message.command) < 2:
+    if message.reply_to_message and message.reply_to_message.document:
+        document = message.reply_to_message.document
+        if document.file_name.endswith(".py"):
+            file_path = await client.download_media(document)
+            with open(file_path, "r") as file:
+                cmd = file.read()
+        else:
+            return await edit_or_reply(message, text="<b>Only .py files are supported.</b>")
+    elif len(message.command) < 2:
         return await edit_or_reply(message, text="<b>ᴡʜᴀᴛ ʏᴏᴜ ᴡᴀɴɴᴀ ᴇxᴇᴄᴜᴛᴇ ʙᴀʙʏ [ᴘʏ] ?</b>")
-    try:
+    else:
         cmd = message.text.split(" ", maxsplit=1)[1]
-    except IndexError:
-        return await message.delete()
+
     t1 = time()
     old_stderr = sys.stderr
     old_stdout = sys.stdout
@@ -136,7 +144,7 @@ async def executor(client: app, message: Message):
             ]
         )
         await edit_or_reply(message, text=final_output, reply_markup=keyboard)
-
+               
 @app.on_callback_query(filters.regex(r"runtime"))
 async def runtime_func_cq(_, cq):
     runtime = cq.data.split(None, 1)[1]
@@ -230,13 +238,19 @@ async def shellrunner(_, message: Message):
         await edit_or_reply(message, text="<b>OUTPUT :</b>\n<code>None</code>")
     await message.stop_propagation()
 
-# Telethon Bot Handlers
+# Telethon eval command
 @Bad.on(events.NewMessage(pattern='/eval2'))
 async def eval_handler(event):
-    if len(event.raw_text.split()) < 2:
+    if event.reply_to and event.reply_to.file and event.reply_to.file.name.endswith('.py'):
+        file_path = await event.client.download_media(event.reply_to)
+        with open(file_path, "r") as file:
+            cmd = file.read()
+    elif len(event.raw_text.split()) < 2:
         await event.reply("ᴡʜᴀᴛ ʏᴏᴜ ᴡᴀɴɴᴀ ᴇxᴇᴄᴜᴛᴇ ʙᴀʙʏ [ᴛᴇʟᴇ] ?")
         return
-    cmd = event.raw_text.split(" ", maxsplit=1)[1]
+    else:
+        cmd = event.raw_text.split(" ", maxsplit=1)[1]
+
     t1 = time()
     old_stderr = sys.stderr
     old_stdout = sys.stdout
