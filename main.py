@@ -290,49 +290,55 @@ async def runtime_callback(event):
     runtime = event.data.decode().split(None, 1)[1]
     await event.answer(runtime, alert=True)
 
-# Add the install command
+
+# Function to check if a plugin is already installed
+def is_plugin_installed(plugin_name):
+    try:
+        __import__(plugin_name)
+        return True
+    except ImportError:
+        return False
+
+# Install command
 @app.on_message(filters.command("install") & ~filters.forwarded & ~filters.via_bot)
 async def install_plugin(client, message):
     if len(message.command) < 2:
         return await edit_or_reply(message, text="<b>ᴇxᴀᴍᴩʟᴇ :</b>\n/install <plugin_name>")
     plugin_name = message.text.split(" ", maxsplit=1)[1]
     try:
-        # Install for Pyrogram
-        if plugin_name not in sys.modules:
+        if not is_plugin_installed(plugin_name):
             subprocess.check_call([sys.executable, "-m", "pip", "install", plugin_name])
-        await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' installed successfully for Pyrogram.</b>")
-        
-        # Install for Telethon
-        subprocess.check_call([sys.executable, "-m", "pip", "install", plugin_name])
-        await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' installed successfully for Telethon.</b>")
+            await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' installed successfully.</b>")
+        else:
+            await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' is already installed.</b>")
     except Exception as e:
         await edit_or_reply(message, text=f"<b>Failed to install plugin '{plugin_name}':</b>\n<pre>{str(e)}</pre>")
 
-# Add the uninstall command
+# Uninstall command
 @app.on_message(filters.command("uninstall") & ~filters.forwarded & ~filters.via_bot)
 async def uninstall_plugin(client, message):
     if len(message.command) < 2:
         return await edit_or_reply(message, text="<b>ᴇxᴀᴍᴩʟᴇ :</b>\n/uninstall <plugin_name>")
     plugin_name = message.text.split(" ", maxsplit=1)[1]
     try:
-        # Uninstall for Pyrogram
-        if plugin_name in sys.modules:
+        if is_plugin_installed(plugin_name):
             subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "-y", plugin_name])
-        await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' uninstalled successfully for Pyrogram.</b>")
-        
-        # Uninstall for Telethon
-        subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "-y", plugin_name])
-        await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' uninstalled successfully for Telethon.</b>")
+            await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' uninstalled successfully.</b>")
+        else:
+            await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' is not installed.</b>")
     except Exception as e:
         await edit_or_reply(message, text=f"<b>Failed to uninstall plugin '{plugin_name}':</b>\n<pre>{str(e)}</pre>")
-               
+
+# Restart command to ensure commands persist across restarts
 @app.on_message(filters.command("rs") & ~filters.forwarded & ~filters.via_bot)
 async def restart(client: PyroClient, message: Message):
     reply = await message.reply_text("**🔁 Restarting...**")
     await message.delete()
     await reply.edit_text("Successfully Restarted\nPlease wait 1-2 min for loading user plugins...")
     os.system(f"kill -9 {os.getpid()} && python3 main.py")
-           
+
+
+
 if __name__ == "__main__":
     app.run()
     Bad.run_until_disconnected()
