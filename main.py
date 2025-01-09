@@ -320,9 +320,16 @@ async def install_plugin(client, message):
             with open(f"pyrogram_{plugin_name}.py", "w") as plugin_file_pyrogram, open(f"telethon_{plugin_name}.py", "w") as plugin_file_telethon:
                 plugin_file_pyrogram.write(code)
                 plugin_file_telethon.write(code)
-
-            await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' installed successfully for both Pyrogram and Telethon from file.</b>")
-            logger.info(f"Plugin '{plugin_name}' installed successfully for both Pyrogram and Telethon from file.")
+            
+            # Verify the plugin import
+            try:
+                __import__(f"pyrogram_{plugin_name}")
+                __import__(f"telethon_{plugin_name}")
+                await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' installed successfully for both Pyrogram and Telethon from file.</b>")
+                logger.info(f"Plugin '{plugin_name}' installed successfully for both Pyrogram and Telethon from file.")
+            except ImportError as e:
+                await edit_or_reply(message, text=f"<b>Failed to import plugin '{plugin_name}':</b>\n<pre>{str(e)}</pre>")
+                logger.error(f"Failed to import plugin '{plugin_name}': {str(e)}")
         except Exception as e:
             await edit_or_reply(message, text=f"<b>Failed to install plugin from file:</b>\n<pre>{str(e)}</pre>")
             logger.error(f"Failed to install plugin from file: {str(e)}")
@@ -337,8 +344,15 @@ async def install_plugin(client, message):
                 plugin_file_pyrogram.write(plugin_code)
                 plugin_file_telethon.write(plugin_code)
             
-            await edit_or_reply(message, text=f"<b>Plugin installed successfully for both Pyrogram and Telethon from command.</b>")
-            logger.info("Plugin installed successfully for both Pyrogram and Telethon from command.")
+            # Verify the plugin import
+            try:
+                __import__(f"pyrogram_{plugin_name}")
+                __import__(f"telethon_{plugin_name}")
+                await edit_or_reply(message, text=f"<b>Plugin installed successfully for both Pyrogram and Telethon from command.</b>")
+                logger.info("Plugin installed successfully for both Pyrogram and Telethon from command.")
+            except ImportError as e:
+                await edit_or_reply(message, text=f"<b>Failed to import plugin:</b>\n<pre>{str(e)}</pre>")
+                logger.error(f"Failed to import plugin: {str(e)}")
         except Exception as e:
             await edit_or_reply(message, text=f"<b>Failed to install plugin from command:</b>\n<pre>{str(e)}</pre>")
             logger.error(f"Failed to install plugin from command: {str(e)}")
