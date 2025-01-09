@@ -568,8 +568,6 @@ if __name__ == "__main__":
         logger.info("Pyrogram client started successfully.")
     except Exception as e:
         logger.error(f"Failed to start Pyrogram client: {str(e)}")
-    else:
-        app.send_message(OWNER_ID, "Bot started successfully.")
     
     try:
         logger.info("Starting Telethon client...")
@@ -577,7 +575,5 @@ if __name__ == "__main__":
         logger.info("Telethon client started successfully.")
     except Exception as e:
         logger.error(f"Failed to start Telethon client: {str(e)}")
-    else:
-        Bad.send_message(OWNER_ID, "Bot started successfully.")
-
+    
     idle()
