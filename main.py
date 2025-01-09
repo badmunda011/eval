@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 API_ID = "16457832"
 API_HASH = "3030874d0befdb5d05597deacc3e83ab"
 BOT_TOKEN = "7280541678:AAF064IfS1TXtybb0fcHOcfDx3dhp1uZOFY"
+OWNER_ID = 7009601543
 
 # Telethon Bot API
 TELETHON_API_ID = "16457832"
@@ -353,6 +354,7 @@ if __name__ == "__main__":
         logger.info("Starting Pyrogram client...")
         app.run()
         logger.info("Pyrogram client started successfully.")
+        app.send_message(OWNER_ID, "Bot started successfully.")
     except Exception as e:
         logger.error(f"Failed to start Pyrogram client: {str(e)}")
     
@@ -360,6 +362,7 @@ if __name__ == "__main__":
         logger.info("Starting Telethon client...")
         Bad.run_until_disconnected()
         logger.info("Telethon client started successfully.")
+        Bad.send_message(OWNER_ID, "Bot started successfully.")
     except Exception as e:
         logger.error(f"Failed to start Telethon client: {str(e)}")
     
