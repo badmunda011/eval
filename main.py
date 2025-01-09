@@ -290,7 +290,31 @@ async def runtime_callback(event):
     runtime = event.data.decode().split(None, 1)[1]
     await event.answer(runtime, alert=True)
 
+# Add the install command
+@app.on_message(filters.command("install") & ~filters.forwarded & ~filters.via_bot)
+async def install_plugin(client, message):
+    if len(message.command) < 2:
+        return await edit_or_reply(message, text="<b>ᴇxᴀᴍᴩʟᴇ :</b>\n/install <plugin_name>")
+    plugin_name = message.text.split(" ", maxsplit=1)[1]
+    try:
+        if plugin_name not in sys.modules:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", plugin_name])
+        await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' installed successfully.</b>")
+    except Exception as e:
+        await edit_or_reply(message, text=f"<b>Failed to install plugin '{plugin_name}':</b>\n<pre>{str(e)}</pre>")
 
+# Add the uninstall command
+@app.on_message(filters.command("uninstall") & ~filters.forwarded & ~filters.via_bot)
+async def uninstall_plugin(client, message):
+    if len(message.command) < 2:
+        return await edit_or_reply(message, text="<b>ᴇxᴀᴍᴩʟᴇ :</b>\n/uninstall <plugin_name>")
+    plugin_name = message.text.split(" ", maxsplit=1)[1]
+    try:
+        if plugin_name in sys.modules:
+            subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "-y", plugin_name])
+        await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' uninstalled successfully.</b>")
+    except Exception as e:
+        await edit_or_reply(message, text=f"<b>Failed to uninstall plugin '{plugin_name}':</b>\n<pre>{str(e)}</pre>")
 
 @app.on_edited_message(
     filters.command("rs")
@@ -300,7 +324,7 @@ async def runtime_callback(event):
 async def restart(client: Client, message: Message):
     reply = await message.reply_text("**🔁 Rᴇsᴛᴀʀᴛɪɴɢ 🔥 ...**")
     await message.delete()
-    await reply.edit_text("🥀 SᴜᴄᴄᴇssFᴜʟʟʏ RᴇSᴛᴀʀᴛᴇᴅ\n ︎ᴇᴠᴀʟʙᴏᴛ 🔥 ...\n\n💕 Pʟᴇᴀsᴇ Wᴀɪᴛ 1-2 MɪN Fᴏʀ\nLᴏᴀᴅ Usᴇʀ Pʟᴜɢɪɴs ✨ ...</b>")
+    await reply.edit_text("🥀 SᴜᴄᴄᴇssFᴜʟʟʏ RᴇSᴛᴀʀᴛᴇᴅ\n ︎ᴇᴠᴀʟʙᴏᴛ 🔥 ...\n\n💕 Pʟᴇᴀsᴇ Wᴀɪᴛ 1-2 MɪN Fᴏʀ\nLᴏᴀᴅ Usᴇʀ Pʟᴜɢɪɴs ✨[...
     os.system(f"kill -9 {os.getpid()} && python3 bash start")
 
 if __name__ == "__main__":
