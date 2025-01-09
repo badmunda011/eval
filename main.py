@@ -316,17 +316,13 @@ async def uninstall_plugin(client, message):
     except Exception as e:
         await edit_or_reply(message, text=f"<b>Failed to uninstall plugin '{plugin_name}':</b>\n<pre>{str(e)}</pre>")
 
-@app.on_edited_message(
-    filters.command("rs")
-    & ~filters.forwarded
-    & ~filters.via_bot
-)
-async def restart(client: Client, message: Message):
-    reply = await message.reply_text("**🔁 Rᴇsᴛᴀʀᴛɪɴɢ 🔥 ...**")
+@app.on_message(filters.command("rs") & ~filters.forwarded & ~filters.via_bot)
+async def restart(client: PyroClient, message: Message):
+    reply = await message.reply_text("**🔁 Restarting...**")
     await message.delete()
-    await reply.edit_text("🥀 SᴜᴄᴄᴇssFᴜʟʟʏ RᴇSᴛᴀʀᴛᴇᴅ\n ︎ᴇᴠᴀʟʙᴏᴛ 🔥 ...\n\n💕 Pʟᴇᴀsᴇ Wᴀɪᴛ 1-2 MɪN Fᴏʀ\nLᴏᴀᴅ Usᴇʀ Pʟᴜɢɪɴs ✨[...
-    os.system(f"kill -9 {os.getpid()} && python3 bash start")
-
+    await reply.edit_text("Successfully Restarted\nPlease wait 1-2 min for loading user plugins...")
+    os.system(f"kill -9 {os.getpid()} && python3 main.py")
+           
 if __name__ == "__main__":
     app.run()
     Bad.run_until_disconnected()
