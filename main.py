@@ -560,24 +560,21 @@ async def install_plugin(client, message):
             logger.error(f"Failed to install plugin from command: {str(e)}")
 
 
-
 if __name__ == "__main__":
     try:
         logger.info("Starting Pyrogram client...")
         app.run()
         logger.info("Pyrogram client started successfully.")
+        app.send_message(OWNER_ID, "Bot started successfully.")
     except Exception as e:
         logger.error(f"Failed to start Pyrogram client: {str(e)}")
-    else:
-        app.send_message(OWNER_ID, "Bot started successfully.")
     
     try:
         logger.info("Starting Telethon client...")
         Bad.run_until_disconnected()
         logger.info("Telethon client started successfully.")
+        Bad.send_message(OWNER_ID, "Bot started successfully.")
     except Exception as e:
         logger.error(f"Failed to start Telethon client: {str(e)}")
-    else:
-        Bad.send_message(OWNER_ID, "Bot started successfully.")
-
+    
     idle()
