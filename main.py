@@ -340,6 +340,18 @@ async def restart(client: PyroClient, message: Message):
 
 
 if __name__ == "__main__":
-    app.run()
-    Bad.run_until_disconnected()
+    try:
+        logger.info("Starting Pyrogram client...")
+        app.run()
+        logger.info("Pyrogram client started successfully.")
+    except Exception as e:
+        logger.error(f"Failed to start Pyrogram client: {str(e)}")
+    
+    try:
+        logger.info("Starting Telethon client...")
+        Bad.run_until_disconnected()
+        logger.info("Telethon client started successfully.")
+    except Exception as e:
+        logger.error(f"Failed to start Telethon client: {str(e)}")
+    
     idle()
