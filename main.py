@@ -284,18 +284,17 @@ async def eval_handler(event):
         with open(filename, "w+", encoding="utf8") as out_file:
             out_file.write(str(evaluation))
         t2 = time()
-        buttons = [
-            Button.inline(f"⏳ {round(t2-t1, 3)} Seconds"),
+        keyboard = [
+            [Button.inline(f"⏳ {round(t2-t1, 3)} Seconds")],
         ]
-        await event.reply(file=filename, buttons=buttons)
+        await event.respond(file=filename, buttons=keyboard)
         os.remove(filename)
     else:
         t2 = time()
-        buttons = [
-            Button.inline(f"⏳ {round(t2-t1, 3)} Seconds"),
-            Button.inline("🗑", data=f"forceclose|{event.sender_id}"),
+        keyboard = [
+            [Button.inline(f"⏳ {round(t2-t1, 3)} Seconds"), Button.inline("🗑", data=f"forceclose|{event.sender_id}")],
         ]
-        await event.reply(final_output, buttons=buttons)
+        await event.respond(final_output, buttons=keyboard)
 
 @Bad.on(events.CallbackQuery(data="forceclose"))
 async def forceclose_callback(event):
