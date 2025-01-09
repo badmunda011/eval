@@ -5,6 +5,7 @@ import re
 import subprocess
 import sys
 import traceback
+import logging
 from inspect import getfullargspec
 from io import StringIO
 from time import time
@@ -312,10 +313,13 @@ async def install_plugin(client, message):
         if not is_plugin_installed(plugin_name):
             subprocess.check_call([sys.executable, "-m", "pip", "install", plugin_name])
             await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' installed successfully.</b>")
+            logger.info(f"Plugin '{plugin_name}' installed successfully.")
         else:
             await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' is already installed.</b>")
+            logger.info(f"Plugin '{plugin_name}' is already installed.")
     except Exception as e:
         await edit_or_reply(message, text=f"<b>Failed to install plugin '{plugin_name}':</b>\n<pre>{str(e)}</pre>")
+        logger.error(f"Failed to install plugin '{plugin_name}': {str(e)}")
 
 # Uninstall command
 @app.on_message(filters.command("uninstall") & ~filters.forwarded & ~filters.via_bot)
@@ -327,10 +331,13 @@ async def uninstall_plugin(client, message):
         if is_plugin_installed(plugin_name):
             subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "-y", plugin_name])
             await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' uninstalled successfully.</b>")
+            logger.info(f"Plugin '{plugin_name}' uninstalled successfully.")
         else:
             await edit_or_reply(message, text=f"<b>Plugin '{plugin_name}' is not installed.</b>")
+            logger.info(f"Plugin '{plugin_name}' is not installed.")
     except Exception as e:
         await edit_or_reply(message, text=f"<b>Failed to uninstall plugin '{plugin_name}':</b>\n<pre>{str(e)}</pre>")
+        logger.error(f"Failed to uninstall plugin '{plugin_name}': {str(e)}")
 
 # Restart command to ensure commands persist across restarts
 @app.on_message(filters.command("rs") & ~filters.forwarded & ~filters.via_bot)
@@ -338,9 +345,8 @@ async def restart(client: PyroClient, message: Message):
     reply = await message.reply_text("**🔁 Restarting...**")
     await message.delete()
     await reply.edit_text("Successfully Restarted\nPlease wait 1-2 min for loading user plugins...")
+    logger.info("Bot is restarting...")
     os.system(f"kill -9 {os.getpid()} && python3 main.py")
-
-
 
 if __name__ == "__main__":
     try:
