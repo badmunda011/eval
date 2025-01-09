@@ -309,7 +309,7 @@ def is_plugin_installed(plugin_name):
 async def install_plugin(client, message):
     if len(message.command) < 2:
         return await edit_or_reply(message, text="<b>ᴇxᴀᴍᴩʟᴇ :</b>\n/install <plugin_name>")
-    plugin_name = message.text.split(" ", maxsplit=1)[1]
+    plugin_name = message.text.split(" ", maxsplit=1)[1].strip()
     try:
         if not is_plugin_installed(plugin_name):
             subprocess.check_call([sys.executable, "-m", "pip", "install", plugin_name])
@@ -321,7 +321,7 @@ async def install_plugin(client, message):
     except Exception as e:
         await edit_or_reply(message, text=f"<b>Failed to install plugin '{plugin_name}':</b>\n<pre>{str(e)}</pre>")
         logger.error(f"Failed to install plugin '{plugin_name}': {str(e)}")
-
+               
 # Uninstall command
 @app.on_message(filters.command("uninstall") & ~filters.forwarded & ~filters.via_bot)
 async def uninstall_plugin(client, message):
