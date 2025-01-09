@@ -573,6 +573,7 @@ if __name__ == "__main__":
     
     try:
         logger.info("Starting Telethon client...")
+        Bad.start()
         Bad.run_until_disconnected()
         logger.info("Telethon client started successfully.")
     except Exception as e:
