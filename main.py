@@ -61,6 +61,22 @@ def gen_font(text, new_font):
 
 @app.on_message(filters.text & ~filters.forwarded & ~filters.via_bot)
 async def font_ubot(client: Client, message: Message):
+    font_list = [
+        "smallcap",
+        "monospace",
+        "outline",
+        "script",
+        "blackbubbles",
+        "bubbles",
+        "bold",
+        "bolditalic"
+    ]
+    buttons = [[InlineKeyboardButton(font, callback_data=f"{font}|{message.text}") for font in font_list]]
+    reply_markup = InlineKeyboardMarkup(buttons)
+    await message.reply("Choose a font:", reply_markup=reply_markup)
+
+@app.on_message(filters.text & ~filters.forwarded & ~filters.via_bot)
+async def font_ubot(client: Client, message: Message):
     buttons = [[InlineKeyboardButton(font, callback_data=f"{font}|{message.text}") for font in fonts]]
     reply_markup = InlineKeyboardMarkup(buttons)
     await message.reply("Choose a font:", reply_markup=reply_markup)
