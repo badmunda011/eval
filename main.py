@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 # Pyrogram Bot API
 API_ID = "16457832"
 API_HASH = "3030874d0befdb5d05597deacc3e83ab"
-BOT_TOKEN = "7280541678:AAE7Or_mN10MPV2gjEi_JjK3gaFx3XmoRnk"
+BOT_TOKEN = "7502185711:AAHVIGXxrRLb0WUyR606njxpRS2vz-jOduM"
 OWNER_ID = 7009601543
 
 app = Client(
