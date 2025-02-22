@@ -19,84 +19,51 @@ app = Client(
     bot_token=BOT_TOKEN,
 )
 
-fonts = {
-    "smallcap": "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘϙʀsᴛᴜᴠᴡxʏᴢABCDEFGHIJKLMNOPQRSTUVWXYZ",
-    "monospace": "𝚊𝚋𝚌𝚍𝚎𝚏𝚊𝚋𝚌𝚍𝚎𝚏𝚊𝚋𝚌𝚍𝚎𝚏𝚊𝚋𝚌𝚍𝚎𝚏𝚊𝚋𝚌𝚍𝚎𝚏𝚊𝚋𝚌𝚍𝚎𝚏𝚊𝚋𝚌𝚍𝚎𝚏𝚊𝚋𝚌𝚍𝚎𝚏𝚊𝚋𝚌𝚍𝚎𝚏𝚊𝚋𝚌𝚍𝚎𝚏𝚊𝚋𝚌𝚍𝚎𝚏𝚊𝚋𝚌𝚍𝚎𝚏",
-    "outline": "𝕒𝕓𝕔𝕕𝕖𝕗𝕒𝕓𝕔𝕕𝕖𝕗𝕒𝕓𝕔𝕕𝕖𝕗𝕒𝕓𝕔𝕕𝕖𝕗𝕒𝕓𝕔𝕕𝕖𝕗𝕒𝕓𝕔𝕕𝕖𝕗𝕒𝕓𝕔𝕕𝕖𝕗𝕒𝕓𝕔𝕕𝕖𝕗𝕒𝕓𝕔𝕕𝕖𝕗𝕒𝕓𝕔𝕕𝕖𝕗𝕒𝕓𝕔𝕕𝕖𝕗𝕒𝕓𝕔𝕕𝕖𝕗",
-    "script": "𝒶𝒷𝒸𝒹𝑒𝒻𝒶𝒷𝒸𝒹𝑒𝒻𝒶𝒷𝒸𝒹𝑒𝒻𝒶𝒷𝒸𝒹𝑒𝒻𝒶𝒷𝒸𝒹𝑒𝒻𝒶𝒷𝒸𝒹𝑒𝒻𝒶𝒷𝒸𝒹𝑒𝒻𝒶𝒷𝒸𝒹𝑒𝒻𝒶𝒷𝒸𝒹𝑒𝒻𝒶𝒷𝒸𝒹𝑒𝒻𝒶𝒷𝒸𝒹𝑒𝒻",
-    "bold": "𝗮𝗯𝗰𝗱𝗲𝗳𝗮𝗯𝗰𝗱𝗲𝗳𝗮𝗯𝗰𝗱𝗲𝗳𝗮𝗯𝗰𝗱𝗲𝗳𝗮𝗯𝗰𝗱𝗲𝗳𝗮𝗯𝗰𝗱𝗲𝗳𝗮𝗯𝗰𝗱𝗲𝗳𝗮𝗯𝗰𝗱𝗲𝗳𝗮𝗯𝗰𝗱𝗲𝗳𝗮𝗯𝗰𝗱𝗲𝗳𝗮𝗯𝗰𝗱𝗲𝗳",
-    "bolditalic": "𝙖𝙗𝙘𝙙𝙚𝙛𝙖𝙗𝙘𝙙𝙚𝙛𝙖𝙗𝙘𝙙𝙚𝙛𝙖𝙗𝙘𝙙𝙚𝙛𝙖𝙗𝙘𝙙𝙚𝙛𝙖𝙗𝙘𝙙𝙚𝙛𝙖𝙗𝙘𝙙𝙚𝙛𝙖𝙗𝙘𝙙𝙚𝙛𝙖𝙗𝙘𝙙𝙚𝙛𝙖𝙗𝙘𝙙𝙚𝙛𝙖𝙗𝙘𝙙𝙚𝙛"
-}
-
-names_list = [
-    "❛ .𝁘ໍ.𓆪ִֶָ ֺ⎯꯭‌ 𓆩💗𓆪𓈒",
-    "➺ ‌⃪⃜ .✦ 𝆺𝅥⎯ꨄ",
-    "ᯓ𓆰𝅃🔥.⃪⍣꯭꯭𓆪꯭🝐",
-    "🤍 ⍣⃪͜ ᶦ ͢ᵃᵐ⛦⃕‌.❛𝆺𝅥⤹࿗𓆪ꪾ™",
-    "⋆⎯፝֟፝֟⎯᪵ 𝆺꯭𝅥. ᭄꯭🦋꯭᪳᪳᪻⎯̽⎯🐣",
-    "𓆰⎯꯭꯭֯‌⌯ .𓂃ֶꪳ 𓆩〭〬🔥𓆪ꪾ",
-    "𓆰𝅃꯭᳚𓄂️𝆺𝅥⃝🔥 ⃪ͥ͢ ᷟ𓆩 ! 乛|⁪⁬⁮⁮⁮⁮⁮ ‌⁪⁬𓆪🐼™",
+# Define your fonts as a list
+fonts = [
+    "🤍 ⍣⃪‌ ᶦ ‌ᵃᵐ⛦⃕‌!❛𝆺𝅥⤹࿗𓆪ꪾ™",
+    "ᯓ𓆰𝅃🔥!⃪⍣꯭꯭𓆪꯭🝐",
+    "➺ ‌⃪⃜ !✦ 𝆺𝅥⎯ꨄ",
+    "❛ .𝁘ໍ!𓆪ִֶָ ֺ⎯꯭‌ 𓆩💗𓆪𓈒",
+    "𓆰𝅃꯭᳚𓄂️𝆺𝅥⃝🔥 ‌⃪‌ ᷟ𓆩 ! 乛|⁪⁬⁮⁮⁮⁮ ‌⁪⁬𓆪🐼™",
+    "ᯓ𓆰𝅃꯭᳚🦁!˶‌‌꯭꯭꯭꯭꯭꯭֟፝ ⚡꯭꯭꯭꯭꯭",
+    "◄❥‌‌❥ ⃝⃪⃕🦚⟵᷽᷍!˚‌‌‌‌◡‌⃝🐬᪳ ‌⃪𔘓❁‌‌❍•:➛",
+    "➺꯭ ꯭𝅥‌꯭𝆬‌🦋⃪꯭ ─‌⃛┼ 𝞄⃕𝖋𝖋 !🥵⃝⃝ᬽ꯭ ⃪꯭ ꯭𝅥‌꯭𝆬‌➺꯭⎯⎯᪵᪳",
+    "ᯓ𓆰 𝅃!™ ٭ - 𓆪ꪾ⌯ 🜲 ˹ 𝐎ᴘ ˼",
+    "—‌‌ 𝐈тᷟʑ‌꯭𓄂︪︫︠𓆩〭〬!⍣⃪‌ ꭗ‌‌𝆺꯭𝅥𔘓༌🪽⎯꯭‌⎯꯭ ꯭",
+    "𓆰𓏲!𓂃ֶꪳ 𓆩〭〬🦋𓆪ꪾ",
+    "𓆰⎯꯭꯭֯‌⌯ !𓂃ֶꪳ 𓆩〭〬🔥𓆪ꪾ",
+    "🍹𝆺𝅥⃝🤍 ‌⃪‌ ᷟ●!🤍᪳𝆺꯭𝅥⎯꯭‌⎯꯭",
+    "⋆⎯፝֟፝֟⎯᪵ 𝆺꯭𝅥! ᭄꯭🦋꯭᪳᪳᪻⎯‌⎯🐣",
+    "⟶‌ꭙ⋆\"🔥𓆩〬 !⎯᳝֟፝֟⎯‌ꭙ⋆\"🔥",
+    "⟶‌ꭙ⋆\"🔥𓆩〬 !🤍᪳𝆺꯭𝅥⎯᳝֟፝֟⎯‌",
+    "⋆─፝─᪵།‌꯭! ا۬‌𝆺𝅥⃝🌸𝄄꯭꯭𝄄꯭꯭ 𝅥‌꯭𝆬‌👑",
+    "❛ .𝁘ໍ!ꨄ 🦋𓂃•",
+    "⟶‌𓆩〬𝁘ໍ!𓂃˖ॐ🪼⎯᳝֟፝⎯‌ꭙ⋆\"",
+    "⏤‌‌ !𓂃 🔥𝆺𝅥 🜲 ⌯",
+    "𓆰⎯꯭꯭֯‌!𓂃ֶꪳ 𓆩〭〬🔥𓆪ꪾ",
+    ".𝁘ໍ⎯꯭‌- !⌯ 𝘅𝗗 𓂃⎯꯭‌ ִֶָ ֺ🎀",
+    "𓂃❛ ⟶‌! ❜ 🌙⤹🌸",
+    "❍⏤‌‌●!●───♫▷"
 ]
 
-def apply_font(text, font):
-    normal = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    if len(font) != len(normal):
-        raise ValueError("Font length must be equal to the length of the normal alphabet")
-    translation = str.maketrans(normal, font)
-    return text.translate(translation)
-
-def create_styled_text(user_text):
-    words = user_text.split()
-    if not words:
-        return user_text
-
-    styled_words = []
-    for word in words:
-        random_font = random.choice(list(fonts.values()))
-        styled_word = apply_font(word, random_font)
-        styled_words.append(styled_word)
-
-    return " ".join(styled_words)
-
-def create_random_designs(user_text):
-    words = user_text.split()
-    if not words:
-        return user_text
-
-    styled_variations = []
-    for _ in range(3):  # 3 Different Styled Variants
-        random_name = random.choice(names_list)
-        modified_name = random_name.replace(".", random.choice(words), 1)
-        styled_variations.append(modified_name)
-
-    return "\n".join(styled_variations)
-
 @app.on_message(filters.text)
-async def font_ubot(client: Client, message: Message):
-    styled_text = create_styled_text(message.text)
-    design_variations = create_random_designs(message.text)
+async def insert_name(client, message):
+    name = message.text.strip()
+    if not name:
+        await message.reply("Please send a name.")
+        return
 
-    buttons = [
-        [InlineKeyboardButton("Fonts", callback_data=f"fonts|{message.text}")],
-        [InlineKeyboardButton("Names", callback_data=f"names|{message.text}")]
-    ]
-    reply_markup = InlineKeyboardMarkup(buttons)
+    # Pick a random font from the list
+    font = fonts[0]  # You can randomize this if you prefer
 
-    reply_msg = f"**Styled Text:**\n{styled_text}\n\n**Design Variations:**\n{design_variations}"
-    await message.reply(reply_msg, reply_markup=reply_markup)
+    # Insert the name in the middle of the font
+    mid_point = len(font) // 2
+    new_text = font[:mid_point] + name + font[mid_point:]
 
-@app.on_callback_query()
-async def on_callback_query(client: Client, callback_query):
-    data = callback_query.data
-    option, text = data.split('|')
+    # Send the modified text back
+    await message.reply(new_text)
 
-    if option == "fonts":
-        styled_text = create_styled_text(text)
-        await callback_query.message.reply(f"**Styled Text:**\n{styled_text}")
-
-    elif option == "names":
-        design_variations = create_random_designs(text)
-        await callback_query.message.reply(f"**Design Variations:**\n{design_variations}")
 
 if __name__ == "__main__":
     try:
