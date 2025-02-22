@@ -77,10 +77,12 @@ async def font_ubot(client: Client, message: Message):
 
 @app.on_message(filters.text & ~filters.forwarded & ~filters.via_bot)
 async def font_ubot(client: Client, message: Message):
-    buttons = [[InlineKeyboardButton(font, callback_data=f"{font}|{message.text}") for font in fonts]]
+    buttons = []
+    for i in range(0, len(fonts), 4):
+        buttons.append([InlineKeyboardButton(font, callback_data=f"{font}|{message.text}") for font in fonts[i:i+4]])
     reply_markup = InlineKeyboardMarkup(buttons)
     await message.reply("Choose a font:", reply_markup=reply_markup)
-
+    
 @app.on_callback_query()
 async def on_callback_query(client: Client, callback_query):
     data = callback_query.data
