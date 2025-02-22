@@ -90,7 +90,7 @@ async def on_callback_query(client: Client, callback_query):
     await callback_query.message.reply(nan)
 
 @app.on_message(filters.command("listfont") & ~filters.forwarded & ~filters.via_bot)
-async def fonts(client: Client, message: Message):
+async def list_fonts(client: Client, message: Message):  # Renamed function
     await message.reply(
         "<b>ᴅᴀғᴛᴀʀ ғᴏɴᴛs</b>\n\n"
         "<b>• smallcap</b>\n"
