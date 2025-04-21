@@ -70,14 +70,20 @@ async def handle_vote(client, callback_query):
         )
 
 # Inline query handler
+from bson import ObjectId  # Ensure to import ObjectId for MongoDB operations
+
 @app.on_inline_query()
 async def inline_query_handler(client, inline_query):
     query = inline_query.query.lower()
     results = []
 
     for audio in collection.find():
-        if query in audio['title'].lower():
-            if audio.get("file_id") and audio.get("mime_type", "").startswith("audio/"):
+        # Validate audio file_id and MIME type
+        if audio.get("file_id") and audio.get("mime_type", "").startswith("audio/"):
+            try:
+                # Test sending the file to ensure validity (optional, for debugging)
+                await client.get_messages(chat_id=inline_query.from_user.id, message_ids=audio["file_id"])
+                # Append valid results
                 results.append(
                     InlineQueryResultCachedAudio(
                         id=str(uuid4()),
@@ -85,6 +91,9 @@ async def inline_query_handler(client, inline_query):
                         caption=f"Title: {audio['title']}\nVotes: {audio['votes']}"
                     )
                 )
+            except Exception as e:
+                # Log invalid file_ids for debugging
+                print(f"Invalid audio file_id: {audio['file_id']} - Error: {e}")
 
     await inline_query.answer(results, cache_time=1)
 
