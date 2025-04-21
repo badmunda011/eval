@@ -9,7 +9,8 @@ from pymongo import MongoClient
 from uuid import uuid4
 from Config import BOT_TOKEN, MONGO_URL
 import asyncio
-from bson.objectid import ObjectId  # Import for MongoDB ObjectId handling
+from bson.objectid import ObjectId
+import nest_asyncio
 
 # MongoDB client setup
 client = MongoClient(MONGO_URL)
@@ -18,7 +19,7 @@ collection = db['audios']
 
 # Start command
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Send me an audio to add it and vote for others!")
+    await update.message.reply_text("Send me an audio file to save and vote on others!")
 
 # Save audio
 async def handle_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -27,11 +28,15 @@ async def handle_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Please send a valid audio file.")
         return
 
-    # Save to DB with a default title if not provided
+    if not audio.mime_type or not audio.mime_type.startswith("audio/"):
+        await update.message.reply_text("Only audio files (like MP3) are supported.")
+        return
+
     entry = {
         "file_id": audio.file_id,
-        "title": audio.title or f"Audio-{str(uuid4())[:8]}",  # Default title with unique ID
-        "votes": 0
+        "title": audio.title or f"Audio-{str(uuid4())[:8]}",
+        "votes": 0,
+        "mime_type": audio.mime_type
     }
     inserted = collection.insert_one(entry)
 
@@ -42,29 +47,24 @@ async def handle_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=InlineKeyboardMarkup(buttons)
     )
 
-# Handle vote
+# Vote button handler
 async def handle_vote(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     audio_id = query.data.split(":")[1]
 
-    try:
-        # Find the audio document
-        audio = collection.find_one({"_id": ObjectId(audio_id)})
-        if not audio:
-            await query.edit_message_text("Audio not found or has been removed.")
-            return
+    audio = collection.find_one({"_id": ObjectId(audio_id)})
+    if not audio:
+        await query.edit_message_text("Audio not found or has been removed.")
+        return
 
-        # Increment votes
-        collection.update_one({"_id": ObjectId(audio_id)}, {"$inc": {"votes": 1}})
-        audio = collection.find_one({"_id": ObjectId(audio_id)})  # Fetch updated audio
+    collection.update_one({"_id": ObjectId(audio_id)}, {"$inc": {"votes": 1}})
+    updated = collection.find_one({"_id": ObjectId(audio_id)})
 
-        await query.edit_message_caption(
-            caption=f"Title: {audio['title']}\nVotes: {audio['votes']}",
-            reply_markup=query.message.reply_markup
-        )
-    except Exception as e:
-        await query.edit_message_text(f"An error occurred: {e}")
+    await query.edit_message_caption(
+        caption=f"Title: {updated['title']}\nVotes: {updated['votes']}",
+        reply_markup=query.message.reply_markup
+    )
 
 # Inline query handler
 async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -72,24 +72,19 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
     results = []
 
     for audio in collection.find():
-        if query in audio['title'].lower():  # Match query with title
-            if audio.get("file_id"):  # Ensure file_id exists
+        if query in audio['title'].lower():
+            if audio.get("file_id") and audio.get("mime_type", "").startswith("audio/"):
                 results.append(
                     InlineQueryResultCachedAudio(
                         id=str(uuid4()),
                         audio_file_id=audio["file_id"],
-                        caption=f"Title: {audio['title']}\nVotes: {audio['votes']}"  # Show title and votes
+                        caption=f"Title: {audio['title']}\nVotes: {audio['votes']}"
                     )
                 )
 
-    # If no results match, return an empty response
-    if not results:
-        await update.inline_query.answer([], cache_time=1)
-        return
-
     await update.inline_query.answer(results, cache_time=1)
 
-# Run bot
+# Main bot runner
 async def main():
     app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
@@ -99,9 +94,7 @@ async def main():
     print("Bot running...")
     await app.run_polling()
 
-# Fix for already running event loop
+# Async fix
 if __name__ == "__main__":
-    import nest_asyncio
-    import asyncio
     nest_asyncio.apply()
     asyncio.get_event_loop().run_until_complete(main())
