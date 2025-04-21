@@ -18,7 +18,7 @@ collection = db['audios']
 
 # Start command
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Send me an audio to add it and vote others!")
+    await update.message.reply_text("Send me an audio to add it and vote for others!")
 
 # Save audio
 async def handle_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -36,8 +36,11 @@ async def handle_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     inserted = collection.insert_one(entry)
 
     buttons = [[InlineKeyboardButton("Vote", callback_data=f"vote:{str(inserted.inserted_id)}")]]
-    await update.message.reply_audio(audio.file_id, caption=f"Title: {entry['title']}\nVotes: 0",
-                                     reply_markup=InlineKeyboardMarkup(buttons))
+    await update.message.reply_audio(
+        audio.file_id,
+        caption=f"Title: {entry['title']}\nVotes: 0",
+        reply_markup=InlineKeyboardMarkup(buttons)
+    )
 
 # Handle vote
 async def handle_vote(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -70,23 +73,19 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     for audio in collection.find():
         if query in audio['title'].lower():  # Match query with title
-            results.append(
-                InlineQueryResultCachedAudio(
-                    id=str(uuid4()),
-                    audio_file_id=audio["file_id"],
-                    caption=f"Title: {audio['title']}\nVotes: {audio['votes']}"  # Show title and votes
+            if audio.get("file_id"):  # Ensure file_id exists
+                results.append(
+                    InlineQueryResultCachedAudio(
+                        id=str(uuid4()),
+                        audio_file_id=audio["file_id"],
+                        caption=f"Title: {audio['title']}\nVotes: {audio['votes']}"  # Show title and votes
+                    )
                 )
-            )
 
+    # If no results match, return an empty response
     if not results:
-        # If no results match, show a placeholder result
-        results.append(
-            InlineQueryResultCachedAudio(
-                id=str(uuid4()),
-                audio_file_id="",
-                caption="No matching audios found."
-            )
-        )
+        await update.inline_query.answer([], cache_time=1)
+        return
 
     await update.inline_query.answer(results, cache_time=1)
 
