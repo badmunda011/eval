@@ -6,7 +6,9 @@ from telegram.ext import (
 from pymongo import MongoClient
 from uuid import uuid4
 from Config import BOT_TOKEN, MONGO_URL
+import asyncio
 
+# MongoDB client setup
 client = MongoClient(MONGO_URL)
 db = client['audio_bot']
 collection = db['audios']
@@ -72,5 +74,13 @@ async def main():
     print("Bot running...")
     await app.run_polling()
 
-import asyncio
-asyncio.run(main())
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except RuntimeError as e:
+        if "This event loop is already running" in str(e):
+            # If the event loop is already running, run the coroutine directly
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(main())
+        else:
+            raise
