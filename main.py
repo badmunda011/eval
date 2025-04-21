@@ -9,6 +9,7 @@ from pymongo import MongoClient
 from uuid import uuid4
 from Config import BOT_TOKEN, MONGO_URL
 import asyncio
+from bson.objectid import ObjectId  # Import for MongoDB ObjectId handling
 
 # MongoDB client setup
 client = MongoClient(MONGO_URL)
@@ -23,18 +24,20 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     audio = update.message.audio
     if not audio:
+        await update.message.reply_text("Please send a valid audio file.")
         return
 
-    # Save to DB
+    # Save to DB with a default title if not provided
     entry = {
         "file_id": audio.file_id,
-        "title": audio.title or "Untitled Audio",
+        "title": audio.title or f"Audio-{str(uuid4())[:8]}",  # Default title with unique ID
         "votes": 0
     }
     inserted = collection.insert_one(entry)
 
     buttons = [[InlineKeyboardButton("Vote", callback_data=f"vote:{str(inserted.inserted_id)}")]]
-    await update.message.reply_audio(audio.file_id, caption="Votes: 0", reply_markup=InlineKeyboardMarkup(buttons))
+    await update.message.reply_audio(audio.file_id, caption=f"Title: {entry['title']}\nVotes: 0",
+                                     reply_markup=InlineKeyboardMarkup(buttons))
 
 # Handle vote
 async def handle_vote(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -42,20 +45,23 @@ async def handle_vote(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     audio_id = query.data.split(":")[1]
 
-    # Find the audio document
-    audio = collection.find_one({"_id": audio_id})
-    if not audio:
-        await query.edit_message_text("Audio not found or has been removed.")
-        return
+    try:
+        # Find the audio document
+        audio = collection.find_one({"_id": ObjectId(audio_id)})
+        if not audio:
+            await query.edit_message_text("Audio not found or has been removed.")
+            return
 
-    # Increment votes
-    collection.update_one({"_id": audio_id}, {"$inc": {"votes": 1}})
-    audio = collection.find_one({"_id": audio_id})  # Fetch updated audio
+        # Increment votes
+        collection.update_one({"_id": ObjectId(audio_id)}, {"$inc": {"votes": 1}})
+        audio = collection.find_one({"_id": ObjectId(audio_id)})  # Fetch updated audio
 
-    await query.edit_message_caption(
-        caption=f"Votes: {audio['votes']}",
-        reply_markup=query.message.reply_markup
-    )
+        await query.edit_message_caption(
+            caption=f"Title: {audio['title']}\nVotes: {audio['votes']}",
+            reply_markup=query.message.reply_markup
+        )
+    except Exception as e:
+        await query.edit_message_text(f"An error occurred: {e}")
 
 # Inline query handler
 async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -63,14 +69,25 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
     results = []
 
     for audio in collection.find():
-        if query in audio['title'].lower():
+        if query in audio['title'].lower():  # Match query with title
             results.append(
                 InlineQueryResultCachedAudio(
                     id=str(uuid4()),
                     audio_file_id=audio["file_id"],
-                    caption=audio["title"]  # Use caption instead of title
+                    caption=f"Title: {audio['title']}\nVotes: {audio['votes']}"  # Show title and votes
                 )
             )
+
+    if not results:
+        # If no results match, show a placeholder result
+        results.append(
+            InlineQueryResultCachedAudio(
+                id=str(uuid4()),
+                audio_file_id="",
+                caption="No matching audios found."
+            )
+        )
+
     await update.inline_query.answer(results, cache_time=1)
 
 # Run bot
