@@ -1,73 +1,76 @@
-import logging
-import random
-from pyrogram import Client, filters
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-
-# Setup logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-logger = logging.getLogger(__name__)
-
-# Pyrogram Bot API
-API_ID = "16457832"
-API_HASH = "3030874d0befdb5d05597deacc3e83ab"
-BOT_TOKEN = "7502185711:AAHVIGXxrRLb0WUyR606njxpRS2vz-jOduM"
-
-app = Client(
-    name="EVAL",
-    api_id=API_ID,
-    api_hash=API_HASH,
-    bot_token=BOT_TOKEN,
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultCachedAudio
+from telegram.ext import (
+    Application, CommandHandler, MessageHandler, CallbackQueryHandler,
+    InlineQueryHandler, ContextTypes, filters
 )
+from pymongo import MongoClient
+from uuid import uuid4
+from Config import BOT_TOKEN, MONGO_URL
 
-# Define your fonts as a list
-fonts = [
-    "🤍 ⍣⃪‌ ᶦ ‌ᵃᵐ⛦⃕‌!❛𝆺𝅥⤹࿗𓆪ꪾ™",
-    "ᯓ𓆰𝅃🔥!⃪⍣꯭꯭𓆪꯭🝐",
-    "➺ ‌⃪⃜ !✦ 𝆺𝅥⎯ꨄ",
-    "❛ .𝁘ໍ!𓆪ִֶָ ֺ⎯꯭‌ 𓆩💗𓆪𓈒",
-    "𓆰𝅃꯭᳚𓄂️𝆺𝅥⃝🔥 ‌⃪‌ ᷟ𓆩 ! 乛|⁪⁬⁮⁮⁮⁮ ‌⁪⁬𓆪🐼™",
-    "ᯓ𓆰𝅃꯭᳚🦁!˶‌‌꯭꯭꯭꯭꯭꯭֟፝ ⚡꯭꯭꯭꯭꯭",
-    "◄❥‌‌❥ ⃝⃪⃕🦚⟵᷽᷍!˚‌‌‌‌◡‌⃝🐬᪳ ‌⃪𔘓❁‌‌❍•:➛",
-    "➺꯭ ꯭𝅥‌꯭𝆬‌🦋⃪꯭ ─‌⃛┼ 𝞄⃕𝖋𝖋 !🥵⃝⃝ᬽ꯭ ⃪꯭ ꯭𝅥‌꯭𝆬‌➺꯭⎯⎯᪵᪳",
-    "ᯓ𓆰 𝅃!™ ٭ - 𓆪ꪾ⌯ 🜲 ˹ 𝐎ᴘ ˼",
-    "—‌‌ 𝐈тᷟʑ‌꯭𓄂︪︫︠𓆩〭〬!⍣⃪‌ ꭗ‌‌𝆺꯭𝅥𔘓༌🪽⎯꯭‌⎯꯭ ꯭",
-    "𓆰𓏲!𓂃ֶꪳ 𓆩〭〬🦋𓆪ꪾ",
-    "𓆰⎯꯭꯭֯‌⌯ !𓂃ֶꪳ 𓆩〭〬🔥𓆪ꪾ",
-    "🍹𝆺𝅥⃝🤍 ‌⃪‌ ᷟ●!🤍᪳𝆺꯭𝅥⎯꯭‌⎯꯭",
-    "⋆⎯፝֟፝֟⎯᪵ 𝆺꯭𝅥! ᭄꯭🦋꯭᪳᪳᪻⎯‌⎯🐣",
-    "⟶‌ꭙ⋆\"🔥𓆩〬 !⎯᳝֟፝֟⎯‌ꭙ⋆\"🔥",
-    "⟶‌ꭙ⋆\"🔥𓆩〬 !🤍᪳𝆺꯭𝅥⎯᳝֟፝֟⎯‌",
-    "⋆─፝─᪵།‌꯭! ا۬‌𝆺𝅥⃝🌸𝄄꯭꯭𝄄꯭꯭ 𝅥‌꯭𝆬‌👑",
-    "❛ .𝁘ໍ!ꨄ 🦋𓂃•",
-    "⟶‌𓆩〬𝁘ໍ!𓂃˖ॐ🪼⎯᳝֟፝⎯‌ꭙ⋆\"",
-    "⏤‌‌ !𓂃 🔥𝆺𝅥 🜲 ⌯",
-    "𓆰⎯꯭꯭֯‌!𓂃ֶꪳ 𓆩〭〬🔥𓆪ꪾ",
-    ".𝁘ໍ⎯꯭‌- !⌯ 𝘅𝗗 𓂃⎯꯭‌ ִֶָ ֺ🎀",
-    "𓂃❛ ⟶‌! ❜ 🌙⤹🌸",
-    "❍⏤‌‌●!●───♫▷"
-]
+client = MongoClient(MONGO_URL)
+db = client['audio_bot']
+collection = db['audios']
 
-@app.on_message(filters.text)
-async def insert_name(client, message):
-    name = message.text.strip()
-    if not name:
-        await message.reply("Please send a name.")
+# Start command
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Send me an audio to add it and vote others!")
+
+# Save audio
+async def handle_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    audio = update.message.audio
+    if not audio:
         return
 
-    # Pick a random font from the list
-    font = fonts[0]  # You can randomize this if you prefer
+    # Save to DB
+    entry = {
+        "file_id": audio.file_id,
+        "title": audio.title or "Untitled Audio",
+        "votes": 0
+    }
+    inserted = collection.insert_one(entry)
 
-    # Insert the name in the middle of the font
-    mid_point = len(font) // 2
-    new_text = font[:mid_point] + name + font[mid_point:]
+    buttons = [[InlineKeyboardButton("Vote", callback_data=f"vote:{str(inserted.inserted_id)}")]]
+    await update.message.reply_audio(audio.file_id, caption="Votes: 0", reply_markup=InlineKeyboardMarkup(buttons))
 
-    # Send the modified text back
-    await message.reply(new_text)
+# Handle vote
+async def handle_vote(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    audio_id = query.data.split(":")[1]
 
+    collection.update_one({"_id": audio_id}, {"$inc": {"votes": 1}})
+    audio = collection.find_one({"_id": audio_id})
 
-if __name__ == "__main__":
-    try:
-        logger.info("Starting Pyrogram client...")
-        app.run()
-    except Exception as e:
-        logger.error(f"Failed to start Pyrogram client: {str(e)}")
+    await query.edit_message_caption(
+        caption=f"Votes: {audio['votes']}",
+        reply_markup=query.message.reply_markup
+    )
+
+# Inline query handler
+async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.inline_query.query.lower()
+    results = []
+
+    for audio in collection.find():
+        if query in audio['title'].lower():
+            results.append(
+                InlineQueryResultCachedAudio(
+                    id=str(uuid4()),
+                    audio_file_id=audio["file_id"],
+                    title=audio["title"]
+                )
+            )
+    await update.inline_query.answer(results, cache_time=1)
+
+# Run bot
+async def main():
+    app = Application.builder().token(BOT_TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.AUDIO, handle_audio))
+    app.add_handler(CallbackQueryHandler(handle_vote))
+    app.add_handler(InlineQueryHandler(inline_query))
+    print("Bot running...")
+    await app.run_polling()
+
+import asyncio
+asyncio.run(main())
