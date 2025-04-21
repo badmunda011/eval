@@ -1,4 +1,6 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultCachedAudio
+from telegram import (
+    Update, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultCachedAudio
+)
 from telegram.ext import (
     Application, CommandHandler, MessageHandler, CallbackQueryHandler,
     InlineQueryHandler, ContextTypes, filters
@@ -40,8 +42,15 @@ async def handle_vote(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     audio_id = query.data.split(":")[1]
 
-    collection.update_one({"_id": audio_id}, {"$inc": {"votes": 1}})
+    # Find the audio document
     audio = collection.find_one({"_id": audio_id})
+    if not audio:
+        await query.edit_message_text("Audio not found or has been removed.")
+        return
+
+    # Increment votes
+    collection.update_one({"_id": audio_id}, {"$inc": {"votes": 1}})
+    audio = collection.find_one({"_id": audio_id})  # Fetch updated audio
 
     await query.edit_message_caption(
         caption=f"Votes: {audio['votes']}",
@@ -59,7 +68,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 InlineQueryResultCachedAudio(
                     id=str(uuid4()),
                     audio_file_id=audio["file_id"],
-                    title=audio["title"]
+                    caption=audio["title"]  # Use caption instead of title
                 )
             )
     await update.inline_query.answer(results, cache_time=1)
