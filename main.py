@@ -74,13 +74,9 @@ async def main():
     print("Bot running...")
     await app.run_polling()
 
+# Fix for already running event loop
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except RuntimeError as e:
-        if "This event loop is already running" in str(e):
-            # If the event loop is already running, run the coroutine directly
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(main())
-        else:
-            raise
+    import nest_asyncio
+    import asyncio
+    nest_asyncio.apply()
+    asyncio.get_event_loop().run_until_complete(main())
