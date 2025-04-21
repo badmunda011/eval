@@ -1,35 +1,37 @@
-from telegram import (
-    Update, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultCachedAudio
-)
-from telegram.ext import (
-    Application, CommandHandler, MessageHandler, CallbackQueryHandler,
-    InlineQueryHandler, ContextTypes, filters
-)
+from pyrogram import Client, filters
+from pyrogram.types import InlineQueryResultCachedAudio, InlineKeyboardMarkup, InlineKeyboardButton
 from pymongo import MongoClient
 from uuid import uuid4
-from Config import BOT_TOKEN, MONGO_URL
-import asyncio
-from bson.objectid import ObjectId
-import nest_asyncio
+from Config import API_ID, API_HASH, BOT_TOKEN, MONGO_URL
 
 # MongoDB client setup
 client = MongoClient(MONGO_URL)
 db = client['audio_bot']
 collection = db['audios']
 
+# Pyrogram bot client
+app = Client(
+    "audio_bot",
+    api_id=API_ID,
+    api_hash=API_HASH,
+    bot_token=BOT_TOKEN
+)
+
 # Start command
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Send me an audio file to save and vote on others!")
+@app.on_message(filters.command("start") & filters.private)
+async def start(client, message):
+    await message.reply_text("Send me an audio file to save and vote on others!")
 
 # Save audio
-async def handle_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    audio = update.message.audio
+@app.on_message(filters.audio & filters.private)
+async def handle_audio(client, message):
+    audio = message.audio
     if not audio:
-        await update.message.reply_text("Please send a valid audio file.")
+        await message.reply_text("Please send a valid audio file.")
         return
 
     if not audio.mime_type or not audio.mime_type.startswith("audio/"):
-        await update.message.reply_text("Only audio files (like MP3) are supported.")
+        await message.reply_text("Only audio files (like MP3) are supported.")
         return
 
     entry = {
@@ -41,34 +43,36 @@ async def handle_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     inserted = collection.insert_one(entry)
 
     buttons = [[InlineKeyboardButton("Vote", callback_data=f"vote:{str(inserted.inserted_id)}")]]
-    await update.message.reply_audio(
+    await message.reply_audio(
         audio.file_id,
         caption=f"Title: {entry['title']}\nVotes: 0",
         reply_markup=InlineKeyboardMarkup(buttons)
     )
 
 # Vote button handler
-async def handle_vote(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    audio_id = query.data.split(":")[1]
+@app.on_callback_query()
+async def handle_vote(client, callback_query):
+    data = callback_query.data
+    if data and data.startswith("vote:"):
+        audio_id = data.split(":")[1]
+        audio = collection.find_one({"_id": ObjectId(audio_id)})
 
-    audio = collection.find_one({"_id": ObjectId(audio_id)})
-    if not audio:
-        await query.edit_message_text("Audio not found or has been removed.")
-        return
+        if not audio:
+            await callback_query.message.edit("Audio not found or has been removed.")
+            return
 
-    collection.update_one({"_id": ObjectId(audio_id)}, {"$inc": {"votes": 1}})
-    updated = collection.find_one({"_id": ObjectId(audio_id)})
+        collection.update_one({"_id": ObjectId(audio_id)}, {"$inc": {"votes": 1}})
+        updated = collection.find_one({"_id": ObjectId(audio_id)})
 
-    await query.edit_message_caption(
-        caption=f"Title: {updated['title']}\nVotes: {updated['votes']}",
-        reply_markup=query.message.reply_markup
-    )
+        await callback_query.message.edit_caption(
+            caption=f"Title: {updated['title']}\nVotes: {updated['votes']}",
+            reply_markup=callback_query.message.reply_markup
+        )
 
 # Inline query handler
-async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.inline_query.query.lower()
+@app.on_inline_query()
+async def inline_query_handler(client, inline_query):
+    query = inline_query.query.lower()
     results = []
 
     for audio in collection.find():
@@ -82,19 +86,9 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     )
                 )
 
-    await update.inline_query.answer(results, cache_time=1)
+    await inline_query.answer(results, cache_time=1)
 
-# Main bot runner
-async def main():
-    app = Application.builder().token(BOT_TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.AUDIO, handle_audio))
-    app.add_handler(CallbackQueryHandler(handle_vote))
-    app.add_handler(InlineQueryHandler(inline_query))
-    print("Bot running...")
-    await app.run_polling()
-
-# Async fix
+# Run the bot
 if __name__ == "__main__":
-    nest_asyncio.apply()
-    asyncio.get_event_loop().run_until_complete(main())
+    print("Bot is running...")
+    app.run()
